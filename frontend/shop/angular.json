@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "frontend": {
+    "shop": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -66,10 +66,11 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "frontend:build:production"
+              "buildTarget": "shop:build:production"
             },
             "development": {
-              "buildTarget": "frontend:build:development"
+              "buildTarget": "shop:build:development",
+              "port": 4201
             }
           },
           "defaultConfiguration": "development"
