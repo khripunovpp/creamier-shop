@@ -1,0 +1,27 @@
+{
+  "name": "worker-template",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "check": "tsc -noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "hono": "4.11.9"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "4.20260207.0",
+    "@microsoft/eslint-formatter-sarif": "3.1.0",
+    "@ryanccn/eslint-config": "0.5.1",
+    "eslint": "9.39.2",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-unicorn": "59.0.1",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.54.0",
+    "wrangler": "4.63.0"
+  }
+}
