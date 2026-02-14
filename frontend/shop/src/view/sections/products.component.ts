@@ -55,7 +55,7 @@ export class ProductsComponent {
 
   private readonly _productsService = inject(ProductsService);
   private readonly _cartService = inject(CartService);
-  readonly products$ = this._productsService.getProducts();
+  readonly products$ = this._productsService.getProducts$;
   readonly cart$ = this._cartService.cart$;
 
   readonly items$: Observable<{

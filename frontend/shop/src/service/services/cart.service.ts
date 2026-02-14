@@ -1,7 +1,8 @@
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {CartItem} from '../../types/cart.type';
 import {Countable} from '../../types/countable';
-import {BehaviorSubject, map} from 'rxjs';
+import {BehaviorSubject, map, take} from 'rxjs';
+import {ProductsService} from './products.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +14,7 @@ export class CartService {
 
   private _cart: CartItem<Countable>[] = [];
   private _cartSubject = new BehaviorSubject<CartItem<Countable>[]>([]);
+  private _products$ = inject(ProductsService).getProducts$;
 
   get cart() {
     return this._cart;
@@ -23,7 +25,11 @@ export class CartService {
   }
 
   initializeCart() {
-    this._loadCart();
+    this._parseCart()
+      .subscribe(cart => {
+        this._cart = cart;
+        this._cartSubject.next(this._cart);
+      });
   }
 
   count$ = this.cart$.pipe(
@@ -95,10 +101,7 @@ export class CartService {
   private _storeCart() {
     try {
       const cartData = JSON.stringify(this._cart.map(cartItem => ({
-        item: {
-          id: cartItem.item.id,
-          price: cartItem.item.price,
-        },
+        itemId: cartItem.item.id,
         quantity: cartItem.quantity,
       })));
       localStorage.setItem('cart', cartData);
@@ -107,35 +110,34 @@ export class CartService {
     }
   }
 
-  private _loadCart() {
-    try {
-      const cartData = localStorage.getItem('cart');
-      if (cartData) {
-        this._cart = this._parseCart(cartData);
-        this._cartSubject.next(this._cart);
-      }
-    } catch (e) {
-      console.error('Failed to load cart from localStorage', e);
-    }
-  }
+  private _parseCart() {
+    return this._products$.pipe(
+      map(products => {
+        try {
+          const cartData = localStorage.getItem('cart');
+          if (!cartData) return [];
 
-  private _parseCart(cartData: string): CartItem<Countable>[] {
-    try {
-      const parsed = JSON.parse(cartData) as CartItem<Countable>[];
+          const parsed = JSON.parse(cartData);
 
-      if (Array.isArray(parsed)) {
-        return parsed.map(item => ({
-          item: {
-            id: item.item.id,
-            price: item.item.price,
-          },
-          quantity: item.quantity,
-        }));
-      }
-      return [];
-    } catch (e) {
-      console.error('Failed to parse cart data', e);
-      return [];
-    }
+          if (Array.isArray(parsed)) {
+            return parsed.map(cartItem => {
+              const product = products.find(p => p.id === cartItem.itemId);
+              if (product) {
+                return {
+                  item: product,
+                  quantity: cartItem.quantity,
+                } as CartItem<Countable>;
+              }
+              return null;
+            }).filter((item): item is CartItem<Countable> => item !== null);
+          }
+          return [];
+        } catch (e) {
+          console.error('Failed to parse cart data', e);
+          return [];
+        }
+      }),
+      take(1),
+    );
   }
 }

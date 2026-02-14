@@ -6,7 +6,8 @@ import {ContainerComponent} from '../layout/container.component';
   template: `
     <section class="hero">
       <cmh-container>
-        Hero Text
+       <h1 style="margin: 0">Welcome to our shop! </h1>
+        We offer a wide range of products at affordable prices. Browse our selection and find the perfect item for you.
       </cmh-container>
     </section>
   `,
@@ -15,7 +16,6 @@ import {ContainerComponent} from '../layout/container.component';
       padding: 100px 0;
       background: #E1804B;
       color: #ffffff;
-      font-size: 30px;
     }
   `,
   imports: [
