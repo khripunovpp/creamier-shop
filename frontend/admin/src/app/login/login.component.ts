@@ -1,0 +1,100 @@
+import {Component, inject, signal} from '@angular/core';
+import {InputComponent} from '../shared/ui/controls/input.component';
+import {HttpClient} from '@angular/common/http';
+import {form, FormField, required, submit} from '@angular/forms/signals';
+import {firstValueFrom} from 'rxjs';
+import {ButtonComponent} from '../shared/ui/controls/button/button.component';
+import {CardComponent} from '../shared/ui/card/card.component';
+import {FlexColumnComponent} from '../shared/ui/layout/flex-column.component';
+import {NotificationsService} from '../shared/services/notifications.service';
+import {environment} from '../../env/environment';
+import {Router} from '@angular/router';
+import {RoutesEnum} from '../routes.enum';
+
+interface LoginData {
+  email: string;
+  password: string;
+}
+
+@Component({
+  selector: 'cm-login',
+  template: `
+    <cm-card>
+      <form (submit)="onSubmit($event)" novalidate>
+        <cm-flex-column size="medium">
+          <cm-flex-column size="small">
+            <cm-input inputType="email"
+                      placeholder="Email"
+                      [formField]="loginForm.email"/>
+            <cm-input inputType="password"
+                      placeholder="Password"
+                      [formField]="loginForm.password"/>
+          </cm-flex-column>
+
+          <cm-button type="submit">Log In</cm-button>
+        </cm-flex-column>
+      </form>
+    </cm-card>
+
+  `,
+  styles: `
+    :host {
+      margin: auto;
+      width: 100%;
+      max-width: 400px;
+    }
+  `,
+  imports: [
+    InputComponent,
+    FormField,
+    ButtonComponent,
+    CardComponent,
+    FlexColumnComponent
+  ]
+})
+export class LoginComponent {
+
+  constructor() {
+  }
+
+  private readonly _httpClient = inject(HttpClient);
+  private readonly _notificationsService = inject(NotificationsService);
+  private readonly _router = inject(Router);
+
+  loginModel = signal<LoginData>({
+    email: '',
+    password: '',
+  });
+  loginForm = form(this.loginModel, (path) => {
+    required(path.email);
+    required(path.password);
+  });
+
+  signIn(credentials: {
+    email: string
+    password: string
+  }) {
+    return firstValueFrom(this._httpClient.post(
+      environment.worker_url + '/api/auth/login',
+      credentials,
+      {withCredentials: true}
+    ));
+  }
+
+  onSubmit(event: Event) {
+    event.preventDefault();
+    // Perform login logic here
+    submit(this.loginForm, async () => {
+      if (this.loginForm().invalid()) return;
+      const credentials = this.loginModel();
+      this.signIn(credentials)
+        .then((res) => {
+          this._router.navigate([RoutesEnum.dashboard]);
+        })
+        .catch((err) => {
+          console.error('Login failed', err);
+          this._notificationsService.error('Login failed');
+        });
+    });
+  }
+}

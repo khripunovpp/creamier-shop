@@ -1,1 +1,20 @@
 /* You can add global styles to this file, and also import other style files */
+
+:root {
+  --card-bg: #ffffff;
+  --control-bg: #f0f0f0;
+
+  --container-width: 1200px;
+
+  --button-default-bg: #e0e0e0;
+  --button-default-text: #000000;
+}
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  background-color: #f5f5f5;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}

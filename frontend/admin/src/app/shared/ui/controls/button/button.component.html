@@ -1,0 +1,57 @@
+<div class="button-wrap">
+  @if (link()) {
+    <a [class.active]="active()"
+       [class.flat]="flat()"
+       [class.transparent]="transparent()"
+       [class.disabled]="disabled()"
+       [class.outlined]="outlined()"
+       [class.icon]="icon()"
+       [class.no-bottom-radius]="noBottomRadius()"
+       [class.no-left-radius]="noLeftRadius()"
+       [class.no-radius]="noRadius()"
+       [class.no-right-radius]="noRightRadius()"
+       [class.no-top-radius]="noTopRadius()"
+       [class.no-scale]="noScale()"
+       [ngClass]="style() + ' ' + size()"
+       [routerLink]="link() ? link() : null"
+       [routerLinkActive]="['route-active']"
+       class="button">
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    </a>
+  } @else {
+    <button (click)="onClickHandler($event)"
+            [class.active]="active()"
+            [class.flat]="flat()"
+            [class.transparent]="transparent()"
+            [attr.type]="type()"
+            [class.disabled]="disabled()"
+            [class.outlined]="outlined()"
+            [class.icon]="icon()"
+            [class.no-bottom-radius]="noBottomRadius()"
+            [class.no-left-radius]="noLeftRadius()"
+            [class.no-radius]="noRadius()"
+            [class.no-right-radius]="noRightRadius()"
+            [class.no-top-radius]="noTopRadius()"
+            [class.no-scale]="noScale()"
+            [ngClass]="style() + ' ' + size()"
+            [disabled]="disabled()"
+            class="button"
+            type="button">
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    </button>
+  }
+
+  @if (label()) {
+    <span class="button__label"
+          (click)="onClickHandler($event)"
+          [routerLink]="link() ? link() : null"
+          [routerLinkActive]="['route-active']">{{ label() }}</span>
+  }
+
+  <ng-template #content>
+    <div class="button__content">
+      <ng-content></ng-content>
+    </div>
+  </ng-template>
+
+</div>

@@ -45,7 +45,7 @@ loginRoutes.post("/login", async (c) => {
 
 loginRoutes.use("/me", requireAdmin);
 
-loginRoutes.post("/me", async (c) => {
+loginRoutes.get("/me", async (c) => {
   const adminId = c.get("adminId");
 
   const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_KEY);
