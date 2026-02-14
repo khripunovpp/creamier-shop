@@ -1,4 +1,4 @@
-import {Component, input} from '@angular/core';
+import {Component, input, output} from '@angular/core';
 import {Product} from '../../types/product.type';
 import {CartItem} from '../../types/cart.type';
 
@@ -10,7 +10,15 @@ import {CartItem} from '../../types/cart.type';
         {{ product.name }} = {{ product.price }}$
       </div>
 
-      <button type="button"></button>
+      @if (cartItem()) {
+        <div class="product-item__counter">
+          <button type="button" (click)="onDecrementCount.emit()">-</button>
+          {{ cartItem()!.quantity }}
+          <button type="button" (click)="onIncrementCount.emit()">+</button>
+        </div>
+      } @else {
+        <button type="button" (click)="onAddToCart.emit()"></button>
+      }
     }
   `,
   styles: ``,
@@ -20,12 +28,17 @@ export class ProductItemComponent {
   }
 
   readonly product = input.required<Product>();
-  readonly cartItem = input.required<CartItem<Product>>();
+  readonly cartItem = input<CartItem<Product>>();
+  readonly onAddToCart = output();
+  readonly onIncrementCount = output();
+  readonly onDecrementCount = output();
 
   addToCartHandler() {
+    this.onAddToCart.emit();
   }
 
   decrementCountHandler() {
+    this.onDecrementCount.emit();
   }
 
   incrementCountHandler() {
