@@ -2,6 +2,7 @@ import {Hono} from "hono";
 import {cors} from "hono/cors";
 import adminRoutes from "./routes/admin/orders";
 import loginRoutes from "./routes/auth/login";
+import ordersPublicRoutes from "./routes/public/orders";
 
 export type Bindings = {
   SUPABASE_URL: string;
@@ -20,8 +21,22 @@ const app = new Hono<{
   Variables: Variables;
 }>();
 
-app.use("/api/*", cors({
+app.use("/api/admin/*", cors({
   origin: "http://localhost:4200", // твой фронт
+  allowMethods: ["GET", "POST", "OPTIONS"],
+  allowHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
+
+app.use("/api/auth/*", cors({
+  origin: "http://localhost:4200", // твой фронт
+  allowMethods: ["GET", "POST", "OPTIONS"],
+  allowHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
+
+app.use("/api/public/*", cors({
+  origin: "http://localhost:4201", // твой фронт
   allowMethods: ["GET", "POST", "OPTIONS"],
   allowHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -32,6 +47,7 @@ app.get("/", (c) => c.text("Creamier API running 🧁"));
 
 // Подключаем роуты
 // app.route("/api/public", publicRoutes);
+app.route("/api/public", ordersPublicRoutes);
 app.route("/api/admin", adminRoutes);
 app.route("/api/auth", loginRoutes);
 // app.route("/api/telegram", telegramRoutes);
