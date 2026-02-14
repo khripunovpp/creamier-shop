@@ -2,16 +2,15 @@ import {Component, inject} from '@angular/core';
 import {CartService} from '../../service/services/cart.service';
 
 @Component({
-  selector: 'cmh-cart',
+  selector: 'cmh-order-delivery',
   template: `
-    <section class="cart">
-      Cart
+    <section class="order-delivery">
     </section>
   `,
   styles: `
   `,
 })
-export class CartComponent {
+export class OrderDeliveryComponent {
   constructor() {
   }
 
