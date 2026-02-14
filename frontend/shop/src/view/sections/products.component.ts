@@ -4,27 +4,49 @@ import {AsyncPipe} from '@angular/common';
 import {ProductItemComponent} from '../products/product-item.component';
 import {CartService} from '../../service/services/cart.service';
 import {Product} from '../../types/product.type';
-import {combineLatestWith, map, Observable, tap, withLatestFrom} from 'rxjs';
+import {combineLatestWith, map, Observable} from 'rxjs';
 import {CartItem} from '../../types/cart.type';
+import {ContainerComponent} from '../layout/container.component';
 
 @Component({
   selector: 'cmh-products',
   template: `
-    <h2>Products</h2>
     @defer {
-      @for (item of (items$ | async); track item.product) {
-        <cmh-product-item (onAddToCart)="onAddToCartHandler(item.product)"
-                          (onIncrementCount)="onIncrementCountHandler(item.product)"
-                          (onDecrementCount)="onDecrementCountHandler(item.product)"
-                          [cartItem]="item.cartItem"
-                          [product]="item.product"></cmh-product-item>
+      <section class="products">
+        <cmh-container>
+          <div class="products__list">
+            @for (item of (items$ | async); track item.product) {
+              <cmh-product-item (onAddToCart)="onAddToCartHandler(item.product)"
+                                (onIncrementCount)="onIncrementCountHandler(item.product)"
+                                (onDecrementCount)="onDecrementCountHandler(item.product)"
+                                [cartItem]="item.cartItem"
+                                class="products__item"
+                                [product]="item.product"></cmh-product-item>
+            }
+          </div>
+        </cmh-container>
+      </section>
+    }
+  `,
+  styles: `
+    .products {
+      padding: 50px 0;
+
+      &__list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      &__item {
+        flex: 0 0 calc(25% - calc(20px * 3 / 4));
       }
     }
   `,
-  styles: ``,
   imports: [
     AsyncPipe,
-    ProductItemComponent
+    ProductItemComponent,
+    ContainerComponent
   ]
 })
 export class ProductsComponent {

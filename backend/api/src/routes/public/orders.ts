@@ -19,6 +19,24 @@ ordersPublicRoutes.get("/products", async (c) => {
       name: "Product 2",
       price: 20,
       availableQuantity: 50,
+    },
+    {
+      id: 3,
+      name: "Product 3",
+      price: 30,
+      availableQuantity: 25,
+    },
+    {
+      id: 4,
+      name: "Product 4",
+      price: 40,
+      availableQuantity: 10,
+    },
+    {
+      id: 5,
+      name: "Product 5",
+      price: 50,
+      availableQuantity: 5,
     }
   ]);
 });
