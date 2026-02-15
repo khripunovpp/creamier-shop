@@ -1,32 +1,27 @@
-import {verify} from "jsonwebtoken";
 import {Context, Next} from "hono";
+import {getCookie} from "hono/cookie";
+import {createClient} from "@supabase/supabase-js";
 
 export async function requireAdmin(c: Context, next: Next) {
-  const cookie = c.req.header("Cookie");
-  if (!cookie) return c.text("Unauthorized", 401);
+  const token = getCookie(c, "admin_token");
 
-  const token = parseCookie(cookie)?.admin_token;
-  if (!token) return c.text("Unauthorized", 401);
-
-  try {
-    const payload = verify(token, c.env.JWT_SECRET) as any;
-
-    if (payload.role !== "admin") {
-      return c.text("Forbidden", 403);
-    }
-
-    c.set("adminId", payload.id);
-    await next();
-  } catch {
-    return c.text("Forbidden", 403);
+  if (!token) {
+    return c.json({error: "Unauthorized"}, 401);
   }
-}
 
-function parseCookie(cookie: string) {
-  return Object.fromEntries(
-    cookie.split("; ").map((v) => {
-      const [key, value] = v.split("=");
-      return [key, value];
-    })
+  const supabase = createClient(
+    c.env.SUPABASE_URL,
+    c.env.SUPABASE_SERVICE_KEY
   );
+
+  const {data, error} = await supabase.auth.getUser(token);
+
+  if (error || !data.user) {
+    return c.json({error: "Unauthorized"}, 401);
+  }
+
+  // сохраняем юзера в контекст
+  c.set("user", data.user);
+
+  await next();
 }

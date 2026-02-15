@@ -3,6 +3,7 @@ import {cors} from "hono/cors";
 import adminRoutes from "./routes/admin/orders";
 import loginRoutes from "./routes/auth/login";
 import ordersPublicRoutes from "./routes/public/orders";
+import {User} from "@supabase/supabase-js";
 
 export type Bindings = {
   SUPABASE_URL: string;
@@ -13,7 +14,7 @@ export type Bindings = {
 };
 
 export type Variables = {
-  adminId?: string;
+  user?: User
 };
 
 const app = new Hono<{
