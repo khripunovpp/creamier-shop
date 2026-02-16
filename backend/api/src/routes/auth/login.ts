@@ -7,12 +7,15 @@ const loginRoutes = new Hono<{
   Bindings: Bindings;
   Variables: Variables;
 }>();
+
+loginRoutes.use("/me", requireAdmin);
+
 loginRoutes.post("/login", async (c) => {
   const {email, password} = await c.req.json();
 
   const supabase = createClient(
     c.env.SUPABASE_URL,
-    c.env.SUPABASE_SERVICE_KEY,
+    c.env.SUPABASE_PUBLISHABLE_KEY,
   );
 
   const {data, error} = await supabase.auth.signInWithPassword({
@@ -24,6 +27,8 @@ loginRoutes.post("/login", async (c) => {
     return c.json({error: "Invalid credentials"}, 401);
   }
 
+  console.log(data)
+
   const accessToken = data.session.access_token;
 
   return c.json({success: true}, {
@@ -33,13 +38,14 @@ loginRoutes.post("/login", async (c) => {
   });
 });
 
-loginRoutes.use("/me", requireAdmin);
-
 loginRoutes.get("/me", async (c) => {
   const user = c.get("user");
+
   if (!user) {
     return c.json({error: "Unauthorized"}, 401);
   }
+
+  console.log({user});
 
   return c.json({
     email: user.email,

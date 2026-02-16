@@ -11,7 +11,7 @@ export async function requireAdmin(c: Context, next: Next) {
 
   const supabase = createClient(
     c.env.SUPABASE_URL,
-    c.env.SUPABASE_SERVICE_KEY
+    c.env.SUPABASE_PUBLISHABLE_KEY
   );
 
   const {data, error} = await supabase.auth.getUser(token);
@@ -22,6 +22,7 @@ export async function requireAdmin(c: Context, next: Next) {
 
   // сохраняем юзера в контекст
   c.set("user", data.user);
+  c.set("token", token);
 
   await next();
 }
