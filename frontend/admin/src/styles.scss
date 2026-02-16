@@ -9,12 +9,21 @@
   --button-default-bg: #e0e0e0;
   --button-default-text: #000000;
 }
+
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
   margin: 0;
   background-color: #f5f5f5;
 }
 
 *, *::before, *::after {
   box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+}
+
+p {
+  margin-bottom: 0;
 }

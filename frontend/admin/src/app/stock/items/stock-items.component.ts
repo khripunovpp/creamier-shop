@@ -1,0 +1,76 @@
+import {Component, inject, resource} from '@angular/core';
+import {StockService} from '../stock.service';
+import {TableCardComponent} from '../../shared/ui/card/table-card.component';
+import {InlineCircleLoaderComponent} from '../../shared/ui/inline-circle-loader.component';
+import {FlexRowComponent} from '../../shared/ui/layout/flex-row.component';
+import {TitleComponent} from '../../shared/ui/layout/title.component';
+import {FlexColumnComponent} from '../../shared/ui/layout/flex-column.component';
+
+@Component({
+  selector: 'cm-stock-items',
+  template: `
+    <cm-flex-column>
+      <cm-flex-row size="small" [center]="true">
+        <cm-title>Stock Items</cm-title>
+
+        @if (stock.isLoading()) {
+          <cm-inline-circle-loader></cm-inline-circle-loader>
+        }
+      </cm-flex-row>
+
+      @if (stock.hasValue()) {
+        <cm-table-card [size]="'medium'">
+          <table>
+            <colgroup>
+              <col span="1" style="width: 2%;">
+              <col span="1" style="width: 30%;">
+              <col span="1" style="width: 30%;">
+              <col span="1" style="width: 30%;">
+              <col span="1" style="width: 30%;">
+            </colgroup>
+            <tbody>
+              @for (item of stock.value(); track item; let i = $index, count = $count) {
+                <tr>
+                  <td>
+                    {{ i + 1 }}
+                  </td>
+                  <td>{{ item.name }}</td>
+                  <td>
+                    {{ item.price }}<br>
+                    Profit: {{ item.price - item.cost_price }}
+                  </td>
+                  <td>{{ item.cost_price }}</td>
+                  <td>{{ item.status }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </cm-table-card>
+      }
+    </cm-flex-column>
+  `,
+  imports: [
+    TableCardComponent,
+    InlineCircleLoaderComponent,
+    FlexRowComponent,
+    TitleComponent,
+    FlexColumnComponent
+  ],
+  styles: `
+    :host {
+      display: block;
+    }
+  `
+})
+export class StockItemsComponent {
+  constructor() {
+  }
+
+  private readonly _stockService = inject(StockService);
+
+  readonly stock = resource({
+    loader: ({params, abortSignal}) => {
+      return this._stockService.getProducts(abortSignal);
+    },
+  });
+}

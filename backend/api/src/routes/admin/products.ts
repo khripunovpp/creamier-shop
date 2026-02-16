@@ -8,7 +8,6 @@ const adminRoutes = new Hono<{
   Variables: Variables;
 }>();
 
-// Все admin маршруты защищены
 adminRoutes.use("*", requireAdmin);
 
 adminRoutes.get("/products", async (c) => {
@@ -19,16 +18,15 @@ adminRoutes.get("/products", async (c) => {
     {
       global: {
         headers: {
-          Authorization: `Bearer ${adminJwt}`
-        }
-      }
+          Authorization: `Bearer ${adminJwt}`,
+        },
+      },
     }
   );
 
   const {data, error} = await supabase.from("stock_items")
     .select("*")
-
-  console.log({error, data})
+    .order("created_at", {ascending: false});
 
   if (error) {
     return c.json({error: "Failed to fetch products"}, 500);
