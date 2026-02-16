@@ -5,17 +5,27 @@ import {InlineCircleLoaderComponent} from '../../shared/ui/inline-circle-loader.
 import {FlexRowComponent} from '../../shared/ui/layout/flex-row.component';
 import {TitleComponent} from '../../shared/ui/layout/title.component';
 import {FlexColumnComponent} from '../../shared/ui/layout/flex-column.component';
+import {ButtonComponent} from '../../shared/ui/controls/button/button.component';
+import {PullDirective} from '../../shared/directives/pull.directive';
+import {HomeLinkComponent} from '../../shared/ui/home-link.component';
 
 @Component({
   selector: 'cm-stock-items',
   template: `
     <cm-flex-column>
       <cm-flex-row size="small" [center]="true">
+        <cm-home-link></cm-home-link>
+
         <cm-title>Stock Items</cm-title>
 
         @if (stock.isLoading()) {
           <cm-inline-circle-loader></cm-inline-circle-loader>
         }
+
+        <cm-button cmPull
+                   link="/stock/create"
+                   size="tiny">Create
+        </cm-button>
       </cm-flex-row>
 
       @if (stock.hasValue()) {
@@ -54,7 +64,10 @@ import {FlexColumnComponent} from '../../shared/ui/layout/flex-column.component'
     InlineCircleLoaderComponent,
     FlexRowComponent,
     TitleComponent,
-    FlexColumnComponent
+    FlexColumnComponent,
+    ButtonComponent,
+    PullDirective,
+    HomeLinkComponent
   ],
   styles: `
     :host {

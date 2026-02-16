@@ -45,6 +45,16 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () => import('./stock/items/stock-items.component').then(m => m.StockItemsComponent),
       },
+      {
+        path: 'stock/create',
+        canActivate: [authGuard],
+        loadComponent: () => import('./stock/builder/stock-builder.component').then(m => m.StockBuilderComponent),
+      },
+      {
+        path: 'stock/:uuid',
+        canActivate: [authGuard],
+        loadComponent: () => import('./stock/builder/stock-builder.component').then(m => m.StockBuilderComponent),
+      },
     ]
   },
   {
