@@ -1,11 +1,16 @@
-import {Component, signal} from '@angular/core';
-import {form} from '@angular/forms/signals';
+import {Component, inject, signal} from '@angular/core';
+import {form, FormField, required} from '@angular/forms/signals';
 import {FlexColumnComponent} from '../../shared/ui/layout/flex-column.component';
 import {FlexRowComponent} from '../../shared/ui/layout/flex-row.component';
-import {InlineCircleLoaderComponent} from '../../shared/ui/inline-circle-loader.component';
-import {TableCardComponent} from '../../shared/ui/card/table-card.component';
 import {TitleComponent} from '../../shared/ui/layout/title.component';
 import {BackLinkComponent} from '../../shared/ui/back-link.component';
+import {InputComponent} from '../../shared/ui/controls/input.component';
+import {NumberInputComponent} from '../../shared/ui/controls/number-input.component';
+import {ControlComponent} from '../../shared/ui/controls/control-item/control.component';
+import {ButtonComponent} from '../../shared/ui/controls/button/button.component';
+import {StockService} from '../stock.service';
+import {finalize} from 'rxjs';
+import {NotificationsService} from '../../shared/services/notifications.service';
 
 export interface StockItemModel {
   name: string
@@ -23,23 +28,68 @@ export interface StockItemModel {
         <cm-back-link [segments]="['/stock']"></cm-back-link>
         <cm-title>New Stock Item</cm-title>
 
-<!--        @if (stock.isLoading()) {-->
-<!--          <cm-inline-circle-loader></cm-inline-circle-loader>-->
-<!--        }-->
+        <!--        @if (stock.isLoading()) {-->
+        <!--          <cm-inline-circle-loader></cm-inline-circle-loader>-->
+        <!--        }-->
       </cm-flex-row>
+
+      <form (submit)="onSubmit($event)"
+            novalidate>
+        <cm-flex-column>
+          <cm-control label="Name">
+            <cm-input placeholder=""
+                      [formField]="stockItemForm.name"></cm-input>
+          </cm-control>
+          <cm-control label="Description">
+            <cm-input placeholder=""
+                      [formField]="stockItemForm.description"></cm-input>
+          </cm-control>
+
+          <cm-flex-row size="small"
+                       [equal]="true">
+            <cm-control label="Price">
+              <cm-number-input placeholder=""
+                               [formField]="stockItemForm.price"></cm-number-input>
+            </cm-control>
+
+            <cm-control label="Cost Price">
+              <cm-number-input placeholder=""
+                               [formField]="stockItemForm.cost_price"></cm-number-input>
+            </cm-control>
+
+            <cm-control label="Quantity">
+              <cm-number-input placeholder=""
+                               [formField]="stockItemForm.quantity"></cm-number-input>
+            </cm-control>
+          </cm-flex-row>
+
+          <cm-flex-row size="small" [center]="true">
+            <cm-button type="submit">
+              Save
+            </cm-button>
+            <!--        @if (stock.isLoading()) {-->
+            <!--          <cm-inline-circle-loader></cm-inline-circle-loader>-->
+            <!--        }-->
+          </cm-flex-row>
+        </cm-flex-column>
+      </form>
     </cm-flex-column>
   `,
   imports: [
     FlexColumnComponent,
     FlexRowComponent,
-    InlineCircleLoaderComponent,
-    TableCardComponent,
     TitleComponent,
-    BackLinkComponent
+    BackLinkComponent,
+    InputComponent,
+    FormField,
+    NumberInputComponent,
+    ControlComponent,
+    ButtonComponent
   ],
   styles: `
     :host {
       display: block;
+      --control-bg: #fff;
     }
   `
 })
@@ -47,14 +97,51 @@ export class StockBuilderComponent {
   constructor() {
   }
 
-  stockItemModel = signal<StockItemModel>({
+  readonly stockItemModel = signal<StockItemModel>({
     name: '',
     description: '',
     price: 0,
     quantity: 0,
     cost_price: 0
   });
-  stockItemForm = form(this.stockItemModel, (path) => {
+  readonly stockItemForm = form(
+    this.stockItemModel,
+    (path) => {
+      required(path.name);
+      required(path.description);
+      required(path.price);
+      required(path.quantity);
+      required(path.cost_price);
+    }
+  );
+  readonly loading = signal(false);
+  private readonly _stockService = inject(StockService);
+  private readonly _notificationsService = inject(NotificationsService);
 
-  });
+  onSubmit(event: Event) {
+    event.preventDefault();
+    if (this.stockItemForm().invalid()) {
+      this._notificationsService.warning('Please fill in all required fields correctly.');
+      return;
+    }
+    this.loading.set(true);
+    this._stockService.createProduct(this.stockItemModel())
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: (item) => {
+          this._notificationsService.success('Stock item created successfully.');
+          this.stockItemForm().reset({
+            name: '',
+            description: '',
+            price: 0,
+            quantity: 0,
+            cost_price: 0
+          });
+        },
+        error: (error) => {
+          this._notificationsService.error('Failed to create stock item. Please try again.');
+          console.error('Error creating stock item:', error);
+        },
+      })
+  }
 }

@@ -25,4 +25,24 @@ ordersPublicRoutes.get("/products", async (c) => {
   return c.json(data);
 });
 
+ordersPublicRoutes.get("/products/:id", async (c) => {
+  const supabase = createClient(
+    c.env.SUPABASE_URL,
+    c.env.SUPABASE_PUBLISHABLE_KEY,
+  );
+
+  const {id} = c.req.param();
+
+  const {data, error} = await supabase.from("public_products")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    return c.json({error: "Failed to fetch product"}, 500);
+  }
+
+  return c.json(data);
+});
+
 export default ordersPublicRoutes;

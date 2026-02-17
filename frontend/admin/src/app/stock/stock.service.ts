@@ -25,12 +25,36 @@ export class StockService {
 
   private readonly _httpClient = inject(HttpClient);
 
-  getProducts(
-    abortSignal: AbortSignal,
-  ) {
-    return firstValueFrom(this._httpClient.get<StockItem[]>(
+  getProducts() {
+    return this._httpClient.get<StockItem[]>(
       environment.worker_url + '/api/admin/products',
+      {withCredentials: true},
+    );
+  }
+
+  createProduct(
+    data: Omit<StockItem, 'id' | 'created_at' | 'stopped_at' | 'status' | 'is_service'>,
+  ) {
+    return this._httpClient.post<StockItem>(
+      environment.worker_url + '/api/admin/products',
+      {
+        ...data,
+        is_service: false,
+      },
       {withCredentials: true}
-    ));
+    );
+  }
+
+  createService(
+    data: Omit<StockItem, 'id' | 'created_at' | 'stopped_at' | 'status' | 'is_service'>,
+  ) {
+    return this._httpClient.post<StockItem>(
+      environment.worker_url + '/api/admin/products',
+      {
+        ...data,
+        is_service: true,
+      },
+      {withCredentials: true}
+    );
   }
 }

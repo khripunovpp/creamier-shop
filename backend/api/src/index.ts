@@ -8,6 +8,7 @@ import {User} from "@supabase/supabase-js";
 export type Bindings = {
   SUPABASE_URL: string;
   SUPABASE_PUBLISHABLE_KEY: string;
+  SUPABASE_SERVICE_KEY: string;
   JWT_SECRET: string;
   TG_BOT_TOKEN: string;
   TG_SECRET: string;

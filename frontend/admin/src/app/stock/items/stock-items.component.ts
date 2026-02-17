@@ -8,6 +8,7 @@ import {FlexColumnComponent} from '../../shared/ui/layout/flex-column.component'
 import {ButtonComponent} from '../../shared/ui/controls/button/button.component';
 import {PullDirective} from '../../shared/directives/pull.directive';
 import {HomeLinkComponent} from '../../shared/ui/home-link.component';
+import {firstValueFrom} from 'rxjs';
 
 @Component({
   selector: 'cm-stock-items',
@@ -83,7 +84,7 @@ export class StockItemsComponent {
 
   readonly stock = resource({
     loader: ({params, abortSignal}) => {
-      return this._stockService.getProducts(abortSignal);
+      return firstValueFrom(this._stockService.getProducts());
     },
   });
 }
