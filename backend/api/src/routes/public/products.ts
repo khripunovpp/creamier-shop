@@ -17,6 +17,8 @@ ordersPublicRoutes.get("/products", async (c) => {
   const {data, error} = await supabase.from("public_products")
     .select("*");
 
+  console.log("Fetched products", {data, error});
+
   if (error) {
     return c.json({error: "Failed to fetch products"}, 500);
   }

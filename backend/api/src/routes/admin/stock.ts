@@ -23,13 +23,27 @@ stockRoutes.get("/", async (c) => {
   const {data, error} = await supabase.from("stock_items")
     .select("*")
     .in("status", statuesToFetch)
-    .order("created_at", {ascending: false})
+    .order("created_at", {ascending: false});
+
+  const stockItemsWithMovements = await Promise.all(data?.map(async (item) => {
+    const {data: movements} = await supabase.from("stock_movements")
+      .select("*")
+      .eq("stock_item_id", item.id)
+      .order("created_at", {ascending: false})
+      .limit(1)
+      .single();
+
+    return {
+      ...item,
+      quantity: movements?.remain || 0,
+    };
+  }) || []);
 
   if (error) {
     return c.json({error: "Failed to fetch products"}, 500);
   }
 
-  return c.json(data);
+  return c.json(stockItemsWithMovements);
 });
 
 stockRoutes.get("/:id", async (c) => {
@@ -165,6 +179,66 @@ stockRoutes.post('/:id/deactivate', async (c) => {
   }
 
   return c.json({message: "Product deactivated successfully"});
+});
+
+stockRoutes.post('/:id/move', async (c) => {
+  const supabase = c.get("supabaseClient");
+
+  if (!supabase) {
+    return c.json({error: "Failed to move stock item"}, 500);
+  }
+
+  const {id} = c.req.param();
+  const {quantity, operation} = await c.req.json();
+
+  const {data: currentItem, error: fetchError} = await supabase.from("stock_items")
+    .select("id")
+    .eq('id', id)
+    .single();
+
+  if (fetchError) {
+    return c.json({error: "Failed to fetch product"}, 500);
+  }
+  if (!currentItem) {
+    return c.json({error: "Product not found"}, 404);
+  }
+
+  let newQuantity = 0;
+  const {error: movementRecordDataError, data: movementRecordData} = await supabase.from("stock_movements")
+    .select("*")
+    .eq("stock_item_id", id)
+    .order("created_at", {ascending: false})
+    .limit(1);
+
+  if (movementRecordDataError) {
+    return c.json({error: "Failed to fetch stock movement data"}, 500);
+  }
+
+  if (movementRecordData && movementRecordData.length > 0) {
+    newQuantity = movementRecordData[0].remain;
+  }
+
+  if (operation === 'add') {
+    newQuantity = newQuantity + quantity;
+  } else if (operation === 'remove') {
+    newQuantity = Math.max(0, newQuantity - quantity);
+  } else {
+    return c.json({error: "Invalid operation"}, 400);
+  }
+
+  const {error: updateError, data: insertedRow} = await supabase.from("stock_movements")
+    .insert({
+      stock_item_id: id,
+      quantity: quantity,
+      operation,
+      remain: newQuantity,
+    });
+
+  if (updateError) {
+    return c.json({error: "Failed to move stock item"}, 500);
+  }
+
+  return c.json({message: "Stock item moved successfully"});
 });
 
 export default stockRoutes;

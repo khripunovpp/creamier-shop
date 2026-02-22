@@ -161,7 +161,6 @@ CREATE TABLE IF NOT EXISTS "public"."stock_items" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "name" "text" NOT NULL,
     "description" "text",
-    "quantity" numeric DEFAULT 0,
     "price" numeric NOT NULL,
     "cost_price" numeric NOT NULL,
     "is_service" boolean DEFAULT false,

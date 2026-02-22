@@ -26,6 +26,10 @@ create table if not exists order_rate_limits (
 -- Добавляем таблицу для хранения информации о товарах в заказе
 ALTER TYPE "public"."stock_operation" ADD VALUE 'make_order';
 
+-- Добавляем колонку remain в stock_movements
+ALTER TABLE stock_movements
+ADD COLUMN remain integer;
+
 -- Создаём функцию для создания заказа с антиспамом и проверкой stock
 create or replace function create_order(
   p_client_key text,

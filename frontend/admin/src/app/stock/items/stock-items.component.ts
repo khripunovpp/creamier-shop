@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, resource} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, resource, viewChild} from '@angular/core';
 import {StockItem, StockService} from '../stock.service';
 import {TableCardComponent} from '../../shared/ui/card/table-card.component';
 import {InlineCircleLoaderComponent} from '../../shared/ui/inline-circle-loader.component';
@@ -15,6 +15,7 @@ import {BadgeComponent} from '../../shared/ui/badge.component';
 import {NotificationsService} from '../../shared/services/notifications.service';
 import {RouterLink} from '@angular/router';
 import {SwitchComponent} from '../../shared/ui/controls/switch.component';
+import {StockMoveActionComponent} from '../moving/stock-move-action.component';
 
 @Component({
   selector: 'cm-stock-items',
@@ -91,22 +92,33 @@ import {SwitchComponent} from '../../shared/ui/controls/switch.component';
                     <td>{{ item.quantity }}</td>
                     <td>
                       <cm-flex-column size="tiny" position="end">
-                        @if (canActivate(item)) {
-                          <cm-button appearance="success"
-                                     (onClick)="activate(item)"
-                                     size="tiny">Activate
-                          </cm-button>
-                        }
-                        @if (canDeactivate(item)) {
-                          <cm-button size="tiny"
-                                     (onClick)="deactivate(item)"
-                                     appearance="warning">
-                            Deactivate
-                          </cm-button>
-                        }
+                        <cm-flex-row size="tiny">
+                          @if (canActivate(item)) {
+                            <cm-button appearance="success"
+                                       (onClick)="activate(item)"
+                                       size="tiny">Activate
+                            </cm-button>
+                          }
+                          @if (canDeactivate(item)) {
+                            <cm-button size="tiny"
+                                       (onClick)="deactivate(item)"
+                                       appearance="warning">
+                              Deactivate
+                            </cm-button>
+                          }
+
+                          @if (canAdjust(item)) {
+                            <cm-button size="tiny"
+                                       (onClick)="openMovingDialog(item)"
+                                       appearance="primary">
+                              Adjust
+                            </cm-button>
+                          }
+                        </cm-flex-row>
 
                         @if (canArchive(item)) {
                           <cm-button size="tiny"
+                                     [flat]="true"
                                      (onClick)="archive(item)"
                                      appearance="danger">
                             Archive
@@ -122,6 +134,8 @@ import {SwitchComponent} from '../../shared/ui/controls/switch.component';
         }
       </cm-flex-column>
     </cm-container>
+
+    <cm-stock-move-action (onConfirm)="stock.reload()"></cm-stock-move-action>
   `,
   imports: [
     TableCardComponent,
@@ -137,6 +151,7 @@ import {SwitchComponent} from '../../shared/ui/controls/switch.component';
     BadgeComponent,
     RouterLink,
     SwitchComponent,
+    StockMoveActionComponent,
   ],
   styles: `
   `,
@@ -146,6 +161,7 @@ export class StockItemsComponent {
   constructor() {
   }
 
+  readonly moveDialog = viewChild(StockMoveActionComponent);
   withArchived = false;
   private readonly _stockService = inject(StockService);
   readonly stock = resource({
@@ -171,6 +187,12 @@ export class StockItemsComponent {
   }
 
   canArchive(
+    item: StockItem
+  ) {
+    return item.status !== 'archived';
+  }
+
+  canAdjust(
     item: StockItem
   ) {
     return item.status !== 'archived';
@@ -225,5 +247,11 @@ export class StockItemsComponent {
       console.error('Failed to archive product', e);
       this._notificationsService.error('Failed to archive product');
     }
+  }
+
+  openMovingDialog(
+    item: StockItem
+  ) {
+    this.moveDialog()?.open(item);
   }
 }

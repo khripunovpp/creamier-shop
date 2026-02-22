@@ -1,41 +1,37 @@
-import {Component, forwardRef, HostListener, input, output, ViewEncapsulation} from '@angular/core';
-import {ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR} from '@angular/forms';
-import {NgClass} from '@angular/common';
+import {Component, input, model, ViewEncapsulation} from '@angular/core';
+import {FormValueControl} from '@angular/forms/signals';
 
 @Component({
   selector: 'cm-radio',
   standalone: true,
   template: `
-    <label [attr.for]="name()+'-'+value()"
-           [ngClass]="size()"
-           [attr.data-u2e]="'radio.' + name() + '.label.' + value()"
+    <label [attr.for]="name()+'-'+payload()"
+           [class]="size()"
+           [attr.data-u2e]="'radio.' + name() + '.label.' + payload()"
            class="cm-radio"
            tabindex="0">
-      <input (ngModelChange)="onChangeCheckbox($event)"
-             [attr.data-u2e]="'radio.' + name() + '.input.' + value()"
-             [attr.id]="name()+'-'+value()"
-             [attr.name]="name()"
-             [attr.value]="radio() ? value() : modelValue"
-             [checked]="modelValue"
-             [ngModel]="modelValue"
-             [type]="radio() ? 'radio' : 'checkbox'"
-             class="checkbox">
-      <span [class.cm-radio__hoverOnly]="markOnHover()"
-            class="cm-radio__mark">
-              <span class="cm-radio__mark-inner">
-                  @if (!noMark()) {
-                    @if (customMark()) {
-                      <span [innerHTML]="customMark()"></span>
-                    } @else {
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                           viewBox="0 0 24 24">
-                      <path fill="currentColor"
-                            d="M9.5 16.5l-4.25-4.25 1.4-1.4L9.5 13.7l7.35-7.35 1.4 1.4z"/>
-                  </svg>
-                    }
-                  }
-              </span>
-          </span>
+      <input (change)="value.set(payload())"
+             [attr.data-u2e]="'radio.' + name() + '.input.' + payload()"
+             [attr.id]="name()+'-'+payload()"
+             [checked]="value() === payload()"
+             type="radio"
+             class="radio">
+      <div [class.cm-radio__hoverOnly]="markOnHover()"
+           class="cm-radio__mark">
+        <div class="cm-radio__mark-inner">
+          @if (!noMark()) {
+            @if (customMark()) {
+              <div [innerHTML]="customMark()"></div>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                   viewBox="0 0 24 24">
+                <path fill="currentColor"
+                      d="M9.5 16.5l-4.25-4.25 1.4-1.4L9.5 13.7l7.35-7.35 1.4 1.4z"/>
+              </svg>
+            }
+          }
+        </div>
+      </div>
 
       <ng-content></ng-content>
     </label>
@@ -65,6 +61,12 @@ import {NgClass} from '@angular/common';
         cursor: pointer;
         transition: all 0.2s ease-in-out;
         border: 1px solid transparent;
+
+        &-inner {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
       }
 
       .cm-radio__hoverOnly {
@@ -87,22 +89,22 @@ import {NgClass} from '@angular/common';
         }
       }
 
-      .checkbox {
+      .radio {
         display: none;
       }
 
-      .checkbox:checked + .cm-radio__mark {
+      .radio:checked + .cm-radio__mark {
         background-color: var(--control-bg-selected);
         opacity: 1;
         font-weight: 700;
       }
 
-      .checkbox:checked + .cm-radio__hoverOnly {
+      .radio:checked + .cm-radio__hoverOnly {
 
         border-color: var(--control-bg-selected);
       }
 
-      .checkbox:checked + .cm-radio__hoverOnly .cm-radio__mark-inner {
+      .radio:checked + .cm-radio__hoverOnly .cm-radio__mark-inner {
         opacity: 1;
 
       }
@@ -111,79 +113,29 @@ import {NgClass} from '@angular/common';
         width: 16px;
         height: 16px;
         border-radius: 6px;
+
+        svg {
+          width: 16px;
+          height: 16px;
+        }
       }
     `
   ],
   encapsulation: ViewEncapsulation.None,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => RadioComponent),
-      multi: true,
-    }
-  ],
-  imports: [
-    FormsModule,
-    NgClass
-]
+  imports: []
 })
 export class RadioComponent
-  implements ControlValueAccessor {
+  implements FormValueControl<string> {
   constructor() {
   }
 
-  modelValue: boolean | string = false;
   customMark = input<string>('');
   name = input<string>('');
-  value = input<string>('');
-  // value = input<string>('');
+  value = model<string>('');
+  payload = input<string>('');
   size = input<
     'small' | 'default' | 'large'
   >('default');
   markOnHover = input<boolean>(false);
-  radio = input<boolean>(false);
   noMark = input<boolean>(false);
-  onCheckboxChanged = output<boolean | string>();
-
-  @HostListener('keydown.enter', ['$event'])
-  @HostListener('keydown.space', ['$event'])
-  onKeydown(event: Event) {
-    event.preventDefault();
-    this.onChangeCheckbox(!this.modelValue);
-  }
-
-  onChange: (value: boolean | string) => void = () => {
-  };
-
-  onTouched: () => void = () => {
-  };
-
-  writeValue(value: boolean): void {
-    this._change(value);
-  }
-
-  registerOnChange(fn: any) {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: any) {
-    this.onTouched = fn;
-  }
-
-  onChangeCheckbox(
-    value: boolean
-  ) {
-    this._change(value);
-  }
-
-
-  private _change(value: boolean | string) {
-    if (typeof value === 'boolean') {
-      this.modelValue = value;
-    } else {
-      this.modelValue = ['true', 'false'].includes(value) ? value === 'true' : value;
-    }
-    this.onChange(this.modelValue);
-    this.onCheckboxChanged.emit(this.modelValue);
-  }
 }

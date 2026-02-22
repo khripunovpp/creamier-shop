@@ -2,7 +2,8 @@
 
 :root {
   --card-bg: #ffffff;
-  --control-bg: #f0f0f0;
+  --control-bg: var(--secondary-light-color);
+  --control-bg-contrast: #f3f3f3;
 
   --container-width: 1200px;
 

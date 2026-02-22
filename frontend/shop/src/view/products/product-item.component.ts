@@ -23,12 +23,14 @@ import {CartItem} from '../../types/cart.type';
                       (click)="onIncrementCount.emit()">+
               </button>
             </div>
-          } @else {
+          } @else if (product.quantity > 0) {
             <button type="button"
                     class="product-item__add-btn"
                     (click)="onAddToCart.emit()">
               Add to Cart
             </button>
+          } @else {
+            <div>Out of Stock</div>
           }
         </div>
       </div>

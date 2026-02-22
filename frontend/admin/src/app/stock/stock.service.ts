@@ -4,7 +4,7 @@ import {firstValueFrom} from 'rxjs';
 import {environment} from '../../env/environment';
 
 export interface StockItem {
-  id: number
+  id: string
   name: string
   description: string
   quantity: number
@@ -95,7 +95,7 @@ export class StockService {
     );
   }
 
-  archiveProduct(id: number) {
+  archiveProduct(id: string) {
     return firstValueFrom(
       this._httpClient.post(
         environment.worker_url + `/api/admin/products/${id}/archive`,
@@ -105,7 +105,7 @@ export class StockService {
     );
   }
 
-  activateProduct(id: number) {
+  activateProduct(id: string) {
     return firstValueFrom(
       this._httpClient.post(
         environment.worker_url + `/api/admin/products/${id}/activate`,
@@ -115,13 +115,30 @@ export class StockService {
     );
   }
 
-  deactivateProduct(id: number) {
+  deactivateProduct(id: string) {
     return firstValueFrom(
       this._httpClient.post(
         environment.worker_url + `/api/admin/products/${id}/deactivate`,
         {},
         {withCredentials: true},
       )
+    );
+  }
+
+  moveStockItem(
+    data: {
+      quantity: number
+      operation: 'add' | 'remove',
+      uuid: string
+    }
+  ) {
+    return this._httpClient.post(
+      environment.worker_url + `/api/admin/products/${data.uuid}/move`,
+      {
+        quantity: +data.quantity,
+        operation: data.operation,
+      },
+      {withCredentials: true}
     );
   }
 }
