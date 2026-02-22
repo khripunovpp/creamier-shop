@@ -8,4 +8,6 @@ export const createStockItemScheme = z.object({
   is_service: z.boolean(),
   quantity: z.number().int().nonnegative(),
   status: z.enum(['stopped', 'active']).default('stopped'),
-})
+});
+
+export type CreateStockItemScheme = z.infer<typeof createStockItemScheme>;

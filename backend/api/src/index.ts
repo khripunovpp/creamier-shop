@@ -1,9 +1,10 @@
 import {Hono} from "hono";
 import {cors} from "hono/cors";
-import adminRoutes from "./routes/admin/products";
+import stockRoutes from "./routes/admin/stock";
 import loginRoutes from "./routes/auth/login";
 import productsPublicRoutes from "./routes/public/products";
-import {User} from "@supabase/supabase-js";
+import {SupabaseClient, User} from "@supabase/supabase-js";
+import {requireAdmin} from "./middleware/auth";
 
 export type Bindings = {
   SUPABASE_URL: string;
@@ -17,6 +18,7 @@ export type Bindings = {
 export type Variables = {
   user?: User
   token?: string
+  supabaseClient?: SupabaseClient
 };
 
 const app = new Hono<{
@@ -45,14 +47,14 @@ app.use("/api/public/*", cors({
   credentials: true,
 }));
 
+app.use("/api/admin/*", requireAdmin);
+
 // Health check
 app.get("/", (c) => c.text("Creamier API running 🧁"));
 
 // Подключаем роуты
-// app.route("/api/public", publicRoutes);
 app.route("/api/public", productsPublicRoutes);
-app.route("/api/admin", adminRoutes);
+app.route("/api/admin/products", stockRoutes);
 app.route("/api/auth", loginRoutes);
-// app.route("/api/telegram", telegramRoutes);
 
 export default app;

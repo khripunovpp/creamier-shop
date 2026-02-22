@@ -1,22 +1,19 @@
 import {Hono} from "hono";
-import {requireAdmin} from "../../middleware/auth";
-import {Bindings, Variables} from "../../index";
-import {createClient} from "@supabase/supabase-js";
 import {zValidator} from '@hono/zod-validator'
+import {Bindings, Variables} from "../../index";
 import {createStockItemScheme} from "../../schemes/create-stock-item.scheme";
 
-const adminRoutes = new Hono<{
+const stockRoutes = new Hono<{
   Bindings: Bindings;
   Variables: Variables;
 }>();
 
-adminRoutes.use("*", requireAdmin);
+stockRoutes.get("/", async (c) => {
+  const supabase = c.get("supabaseClient");
 
-adminRoutes.get("/products", async (c) => {
-  const supabase = createClient(
-    c.env.SUPABASE_URL,
-    c.env.SUPABASE_SERVICE_KEY,
-  );
+  if (!supabase) {
+    return c.json({error: "Failed to fetch products"}, 500);
+  }
 
   const {data, error} = await supabase.from("stock_items")
     .select("*")
@@ -29,18 +26,17 @@ adminRoutes.get("/products", async (c) => {
   return c.json(data);
 });
 
-
-adminRoutes.post(
-  '/products',
+stockRoutes.post(
+  '/',
   zValidator('json', createStockItemScheme),
   async (c) => {
-    const supabase = createClient(
-      c.env.SUPABASE_URL,
-      c.env.SUPABASE_SERVICE_KEY,
-    );
+    const supabase = c.get("supabaseClient");
+
+    if (!supabase) {
+      return c.json({error: "Failed to create product"}, 500);
+    }
 
     const requestData = c.req.valid('json');
-
     const {data, error} = await supabase.from("stock_items")
       .insert(requestData)
       .select("*")
@@ -56,4 +52,4 @@ adminRoutes.post(
   }
 );
 
-export default adminRoutes;
+export default stockRoutes;

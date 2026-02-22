@@ -27,8 +27,6 @@ loginRoutes.post("/login", async (c) => {
     return c.json({error: "Invalid credentials"}, 401);
   }
 
-  console.log(data)
-
   const accessToken = data.session.access_token;
 
   return c.json({success: true}, {
@@ -44,8 +42,6 @@ loginRoutes.get("/me", async (c) => {
   if (!user) {
     return c.json({error: "Unauthorized"}, 401);
   }
-
-  console.log({user});
 
   return c.json({
     email: user.email,

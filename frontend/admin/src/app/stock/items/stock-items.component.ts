@@ -9,6 +9,7 @@ import {ButtonComponent} from '../../shared/ui/controls/button/button.component'
 import {PullDirective} from '../../shared/directives/pull.directive';
 import {HomeLinkComponent} from '../../shared/ui/home-link.component';
 import {firstValueFrom} from 'rxjs';
+import {ContainerComponent} from '../../shared/ui/layout/container.component';
 
 @Component({
   selector: 'cm-stock-items',
@@ -16,52 +17,51 @@ import {firstValueFrom} from 'rxjs';
     class: 'cm-host-expanded'
   },
   template: `
-    <cm-flex-column>
-      <cm-flex-row size="small" [center]="true">
-        <cm-home-link></cm-home-link>
+    <cm-container>
+      <cm-flex-column>
+        <cm-flex-row size="small" [center]="true">
+          <cm-home-link></cm-home-link>
 
-        <cm-title>Stock Items</cm-title>
+          <cm-title>Stock Items</cm-title>
 
-        @if (stock.isLoading()) {
-          <cm-inline-circle-loader></cm-inline-circle-loader>
+          @if (stock.isLoading()) {
+            <cm-inline-circle-loader></cm-inline-circle-loader>
+          }
+
+          <cm-button cmPull
+                     link="/stock/create"
+                     size="tiny">Create
+          </cm-button>
+        </cm-flex-row>
+
+        @if (stock.hasValue()) {
+          <cm-table-card [size]="'medium'">
+            <table>
+              <colgroup>
+                <col span="1" style="width: 30%;">
+                <col span="1" style="width: 20%;">
+                <col span="1" style="width: 20%;">
+                <col span="1" style="width: 20%;">
+                <col span="1" style="width: 10%;">
+              </colgroup>
+              <tbody>
+                @for (item of stock.value(); track item) {
+                  <tr>
+                    <td>{{ item.name }}</td>
+                    <td>
+                      {{ item.price }}
+                    </td>
+                    <td>{{ item.cost_price }}</td>
+                    <td>{{ item.price - item.cost_price }}</td>
+                    <td>{{ item.status }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </cm-table-card>
         }
-
-        <cm-button cmPull
-                   link="/stock/create"
-                   size="tiny">Create
-        </cm-button>
-      </cm-flex-row>
-
-      @if (stock.hasValue()) {
-        <cm-table-card [size]="'medium'">
-          <table>
-            <colgroup>
-              <col span="1" style="width: 2%;">
-              <col span="1" style="width: 30%;">
-              <col span="1" style="width: 30%;">
-              <col span="1" style="width: 30%;">
-              <col span="1" style="width: 30%;">
-            </colgroup>
-            <tbody>
-              @for (item of stock.value(); track item; let i = $index, count = $count) {
-                <tr>
-                  <td>
-                    {{ i + 1 }}
-                  </td>
-                  <td>{{ item.name }}</td>
-                  <td>
-                    {{ item.price }}<br>
-                    Profit: {{ item.price - item.cost_price }}
-                  </td>
-                  <td>{{ item.cost_price }}</td>
-                  <td>{{ item.status }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </cm-table-card>
-      }
-    </cm-flex-column>
+      </cm-flex-column>
+    </cm-container>
   `,
   imports: [
     TableCardComponent,
@@ -71,7 +71,8 @@ import {firstValueFrom} from 'rxjs';
     FlexColumnComponent,
     ButtonComponent,
     PullDirective,
-    HomeLinkComponent
+    HomeLinkComponent,
+    ContainerComponent
   ],
   styles: `
   `
