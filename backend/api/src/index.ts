@@ -5,6 +5,7 @@ import loginRoutes from "./routes/auth/login";
 import productsPublicRoutes from "./routes/public/products";
 import {SupabaseClient, User} from "@supabase/supabase-js";
 import {requireAdmin} from "./middleware/auth";
+import ordersRoutes from "./routes/admin/orders";
 
 export type Bindings = {
   SUPABASE_URL: string;
@@ -55,6 +56,7 @@ app.get("/", (c) => c.text("Creamier API running 🧁"));
 // Подключаем роуты
 app.route("/api/public", productsPublicRoutes);
 app.route("/api/admin/products", stockRoutes);
+app.route("/api/admin/orders", ordersRoutes);
 app.route("/api/auth", loginRoutes);
 
 export default app;

@@ -18,6 +18,25 @@ import {ContainerComponent} from '../shared/ui/layout/container.component';
 
       <section class="dashboard-menu">
         <cm-flex-row>
+
+          <a routerLink="/orders"
+             cmWidth="25%"
+             class="dashboard-menu__item">
+            <cm-card>
+              <cm-flex-column size="small">
+                <div class="dashboard-menu__item-icon">
+                  <img src="/icons/orders-icon.svg"
+                       alt="orders icon">
+                </div>
+
+                <div class="dashboard-menu__item-caption">
+                  Orders
+                </div>
+              </cm-flex-column>
+            </cm-card>
+          </a>
+
+
           <a routerLink="/stock"
              cmWidth="25%"
              class="dashboard-menu__item">
@@ -34,6 +53,7 @@ import {ContainerComponent} from '../shared/ui/layout/container.component';
               </cm-flex-column>
             </cm-card>
           </a>
+
         </cm-flex-row>
       </section>
     </cm-container>
