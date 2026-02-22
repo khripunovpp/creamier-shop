@@ -1,5 +1,5 @@
-import {Component, inject, resource} from '@angular/core';
-import {StockService} from '../stock.service';
+import {ChangeDetectionStrategy, Component, inject, resource} from '@angular/core';
+import {StockItem, StockService} from '../stock.service';
 import {TableCardComponent} from '../../shared/ui/card/table-card.component';
 import {InlineCircleLoaderComponent} from '../../shared/ui/inline-circle-loader.component';
 import {FlexRowComponent} from '../../shared/ui/layout/flex-row.component';
@@ -10,6 +10,8 @@ import {PullDirective} from '../../shared/directives/pull.directive';
 import {HomeLinkComponent} from '../../shared/ui/home-link.component';
 import {firstValueFrom} from 'rxjs';
 import {ContainerComponent} from '../../shared/ui/layout/container.component';
+import {FormsModule} from '@angular/forms';
+import {BadgeComponent} from '../../shared/ui/badge.component';
 
 @Component({
   selector: 'cm-stock-items',
@@ -30,6 +32,7 @@ import {ContainerComponent} from '../../shared/ui/layout/container.component';
 
           <cm-button cmPull
                      link="/stock/create"
+                     appearance="primary"
                      size="tiny">Create
           </cm-button>
         </cm-flex-row>
@@ -38,22 +41,57 @@ import {ContainerComponent} from '../../shared/ui/layout/container.component';
           <cm-table-card [size]="'medium'">
             <table>
               <colgroup>
-                <col span="1" style="width: 30%;">
-                <col span="1" style="width: 20%;">
-                <col span="1" style="width: 20%;">
                 <col span="1" style="width: 20%;">
                 <col span="1" style="width: 10%;">
+                <col span="1" style="width: 10%;">
+                <col span="1" style="width: 10%;">
+                <col span="1" style="width: 10%;">
+                <col span="1" style="width: 20%;">
               </colgroup>
+              <thead>
+              <tr>
+                <th align="left">Name|Status</th>
+                <th align="left">Price</th>
+                <th align="left">Cost</th>
+                <th align="left">Profit</th>
+                <th align="left">Quantity</th>
+                <th align="right">Actions</th>
+              </tr>
+              </thead>
               <tbody>
                 @for (item of stock.value(); track item) {
                   <tr>
-                    <td>{{ item.name }}</td>
+                    <td>
+                      {{ item.name }}
+                      @if (isStopped(item)) {
+                        <cm-badge>{{ item.status }}</cm-badge>
+                      }
+                    </td>
                     <td>
                       {{ item.price }}
                     </td>
                     <td>{{ item.cost_price }}</td>
                     <td>{{ item.price - item.cost_price }}</td>
-                    <td>{{ item.status }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>
+                      <cm-flex-column size="tiny" position="end">
+                        @if (canActivate(item)) {
+                          <cm-button appearance="success"
+                                     size="tiny">Activate
+                          </cm-button>
+                        }
+                        @if (canDeactivate(item)) {
+                          <cm-button size="tiny"
+                                     appearance="warning">
+                            Deactivate
+                          </cm-button>
+                        }
+                        <cm-button size="tiny"
+                                   appearance="danger">
+                          Archive
+                        </cm-button>
+                      </cm-flex-column>
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -72,10 +110,13 @@ import {ContainerComponent} from '../../shared/ui/layout/container.component';
     ButtonComponent,
     PullDirective,
     HomeLinkComponent,
-    ContainerComponent
+    ContainerComponent,
+    FormsModule,
+    BadgeComponent,
   ],
   styles: `
-  `
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StockItemsComponent {
   constructor() {
@@ -88,4 +129,24 @@ export class StockItemsComponent {
       return firstValueFrom(this._stockService.getProducts());
     },
   });
+
+  canActivate(
+    item: StockItem
+  ) {
+    console.log({item});
+    return item.quantity > 0
+      && item.status === 'stopped';
+  }
+
+  canDeactivate(
+    item: StockItem
+  ) {
+    return item.status === 'active';
+  }
+
+  isStopped(
+    item: StockItem
+  ) {
+    return item.status === 'stopped';
+  }
 }

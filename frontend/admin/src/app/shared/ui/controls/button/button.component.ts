@@ -37,7 +37,7 @@ export class ButtonComponent {
   }
 
   onClick = output<any>();
-  style = input<ButtonStyle>('default');
+  appearance = input<ButtonStyle>('default');
   type = input<string>('button');
   size = input<ButtonSizes>('regular');
   outlined = input<boolean>(false);

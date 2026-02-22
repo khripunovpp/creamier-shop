@@ -12,9 +12,22 @@ export class CartService {
     this.initializeCart();
   }
 
-  private _cart: CartItem<Countable>[] = [];
   private _cartSubject = new BehaviorSubject<CartItem<Countable>[]>([]);
   private _products$ = inject(ProductsService).getProducts$;
+
+  get sum$() {
+    return this.cart$.pipe(
+      map(cart => cart.reduce((sum, item) => sum + (item.item.price * item.quantity), 0)),
+    );
+  }
+
+  get count$() {
+    return this.cart$.pipe(
+      map(cart => cart.length),
+    )
+  };
+
+  private _cart: CartItem<Countable>[] = [];
 
   get cart() {
     return this._cart;
@@ -31,13 +44,6 @@ export class CartService {
         this._cartSubject.next(this._cart);
       });
   }
-
-  count$ = this.cart$.pipe(
-    map(cart => cart.length),
-  );
-  sum$ = this.cart$.pipe(
-    map(cart => cart.reduce((sum, item) => sum + (item.item.price * item.quantity), 0)),
-  );
 
   addToCart(item: CartItem<Countable>) {
     const existingItem = this._cart

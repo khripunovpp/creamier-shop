@@ -12,7 +12,7 @@
        [class.no-right-radius]="noRightRadius()"
        [class.no-top-radius]="noTopRadius()"
        [class.no-scale]="noScale()"
-       [ngClass]="style() + ' ' + size()"
+       [ngClass]="appearance() + ' ' + size()"
        [routerLink]="link() ? link() : null"
        [routerLinkActive]="['route-active']"
        class="button">
@@ -33,7 +33,7 @@
             [class.no-right-radius]="noRightRadius()"
             [class.no-top-radius]="noTopRadius()"
             [class.no-scale]="noScale()"
-            [ngClass]="style() + ' ' + size()"
+            [ngClass]="appearance() + ' ' + size()"
             [disabled]="disabled()"
             class="button"
             type="button">

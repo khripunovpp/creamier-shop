@@ -44,7 +44,6 @@ import {CardComponent} from './card.component';
       }
 
       table thead th {
-        text-align: left;
         padding: 8px 12px;
         opacity: 0.4;
         font-size: 0.8em;

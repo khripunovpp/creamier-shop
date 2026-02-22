@@ -11,7 +11,7 @@ export interface StockItem {
   price: number
   cost_price: number
   is_service: boolean
-  status: string
+  status: 'active' | 'stopped'
   created_at: string
   stopped_at: string | null
 }
@@ -55,6 +55,35 @@ export class StockService {
         is_service: true,
       },
       {withCredentials: true}
+    );
+  }
+
+  archiveProduct(id: number) {
+    return firstValueFrom(
+      this._httpClient.post(
+        environment.worker_url + `/api/admin/products/${id}/archive`,
+        {withCredentials: true},
+      )
+    );
+  }
+
+  deactivateProduct(id: number) {
+    return firstValueFrom(
+      this._httpClient.post(
+        environment.worker_url + `/api/admin/products/${id}/deactivate`,
+        {},
+        {withCredentials: true},
+      )
+    );
+  }
+
+  activateProduct(id: number) {
+    return firstValueFrom(
+      this._httpClient.post(
+        environment.worker_url + `/api/admin/products/${id}/activate`,
+        {},
+        {withCredentials: true},
+      )
     );
   }
 }

@@ -35,6 +35,9 @@ import {NgClass} from '@angular/common';
     </label>
   `,
   styles: [`
+    cm-switch {
+      display: flex;
+    }
     .cm-switch {
       display: inline-flex;
       align-items: center;

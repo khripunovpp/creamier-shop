@@ -6,15 +6,77 @@
 
   --container-width: 1200px;
 
-  --button-default-bg: #e0e0e0;
-  --button-default-text: #000000;
+  --p-1: #272727;
+  --p-2: #FDE4D6;
+  --p-3: #e3814a;
+  --p-5: #11746D;
+  --p-6: #EAC623;
+
+  --danger-color: #ff4d4f;
+  --warning-color: #f6af32;
+  --info-color: #1890ff;
+  --success-color: #4caf50;
+  --secondary-color: #928785;
+  --secondary-light-color: #f9f9f9;
+
+  --text-font:  -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+  --text-font-weight: 400;
+  --text-color: var(--p-1);
+
+  --header-height: 51px;
+
+  --bounce-bezier: cubic-bezier(.47, 1.64, .41, .8);
+
+  --background-color: var(--p-2);
+  --background-color-rgb: rgb(249, 240, 232);
+
+  --active-color: var(--p-5);
+  --accent-color: var(--p-3);
+
+  --button-default-bg: var(--p-1);
+  --button-default-text: var(--p-2);
+
+  --button-solid-bg: var(--p-1);
+  --button-solid-text: var(--p-2);
+
+  --button-primary-bg: var(--p-3);
+  --button-primary-text: var(--p-2);
+
+  --button-secondary-bg: var(--secondary-light-color);
+  --button-secondary-dark-bg: var(--secondary-color);
+
+  --button-success-bg: var(--success-color);
+  --button-success-text: #fff8fa;
+
+  --button-danger-bg: var(--danger-color);
+  --button-danger-text: #fff8fa;
+
+  --button-warning-bg: var(--warning-color);
+
+  --button-info-bg: #2531c2;
+
+  --button-transcluent-bg: rgba(255, 255, 255, 0.5);
+
+  --button-flat-overlay: rgba(0, 0, 0, 0.3);
+
+  --badge-primary-color: rgba(227, 129, 74, 0.53);
+  --badge-primary-text-color: var(--p-1);
+  --badge-secondary-color: rgba(146, 135, 133, 0.8);
+  --badge-secondary-text-color: #fff8fa;
+  --badge-success-color: rgba(76, 175, 80, 0.8);
+  --badge-success-text-color: #fff8fa;
+  --badge-danger-color: rgba(255, 77, 79, 0.8);
+  --badge-danger-text-color: #fff8fa;
+  --badge-warning-color: rgba(246, 175, 50, 0.8);
+  --badge-warning-text-color: #fff8fa;
 }
 
 body {
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+  font-family: var(--text-font);
   margin: 0;
-  background-color: #f5f5f5;
+  background-color: var(--background-color);
   line-height: 1.5;
+  color: var(--text-color);
 }
 
 *, *::before, *::after {
