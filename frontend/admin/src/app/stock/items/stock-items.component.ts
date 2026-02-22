@@ -12,6 +12,9 @@ import {firstValueFrom} from 'rxjs';
 import {ContainerComponent} from '../../shared/ui/layout/container.component';
 import {FormsModule} from '@angular/forms';
 import {BadgeComponent} from '../../shared/ui/badge.component';
+import {NotificationsService} from '../../shared/services/notifications.service';
+import {RouterLink} from '@angular/router';
+import {SwitchComponent} from '../../shared/ui/controls/switch.component';
 
 @Component({
   selector: 'cm-stock-items',
@@ -35,6 +38,13 @@ import {BadgeComponent} from '../../shared/ui/badge.component';
                      appearance="primary"
                      size="tiny">Create
           </cm-button>
+        </cm-flex-row>
+
+        <cm-flex-row size="small">
+          <cm-switch [(ngModel)]="withArchived"
+                     (ngModelChange)="stock.reload()">
+            <span slot="left">With archived</span>
+          </cm-switch>
         </cm-flex-row>
 
         @if (stock.hasValue()) {
@@ -62,7 +72,10 @@ import {BadgeComponent} from '../../shared/ui/badge.component';
                 @for (item of stock.value(); track item) {
                   <tr>
                     <td>
-                      {{ item.name }}
+                      <a class="cm-link"
+                         [routerLink]="['/stock', item.id]">
+                        {{ item.name }}
+                      </a>
                       @if (isStopped(item)) {
                         <cm-badge>{{ item.status }}</cm-badge>
                       }
@@ -77,19 +90,25 @@ import {BadgeComponent} from '../../shared/ui/badge.component';
                       <cm-flex-column size="tiny" position="end">
                         @if (canActivate(item)) {
                           <cm-button appearance="success"
+                                     (onClick)="activate(item)"
                                      size="tiny">Activate
                           </cm-button>
                         }
                         @if (canDeactivate(item)) {
                           <cm-button size="tiny"
+                                     (onClick)="deactivate(item)"
                                      appearance="warning">
                             Deactivate
                           </cm-button>
                         }
-                        <cm-button size="tiny"
-                                   appearance="danger">
-                          Archive
-                        </cm-button>
+
+                        @if (canArchive(item)) {
+                          <cm-button size="tiny"
+                                     (onClick)="archive(item)"
+                                     appearance="danger">
+                            Archive
+                          </cm-button>
+                        }
                       </cm-flex-column>
                     </td>
                   </tr>
@@ -113,6 +132,8 @@ import {BadgeComponent} from '../../shared/ui/badge.component';
     ContainerComponent,
     FormsModule,
     BadgeComponent,
+    RouterLink,
+    SwitchComponent,
   ],
   styles: `
   `,
@@ -122,20 +143,22 @@ export class StockItemsComponent {
   constructor() {
   }
 
+  withArchived = false;
   private readonly _stockService = inject(StockService);
-
   readonly stock = resource({
-    loader: ({params, abortSignal}) => {
-      return firstValueFrom(this._stockService.getProducts());
+    loader: () => {
+      return firstValueFrom(this._stockService.getProducts({
+        withArchived: this.withArchived,
+      }));
     },
   });
+  private readonly _notificationsService = inject(NotificationsService);
 
   canActivate(
     item: StockItem
   ) {
-    console.log({item});
-    return item.quantity > 0
-      && item.status === 'stopped';
+    return item.quantity >= 0
+      && ['stopped', 'archived'].includes(item.status);
   }
 
   canDeactivate(
@@ -144,9 +167,54 @@ export class StockItemsComponent {
     return item.status === 'active';
   }
 
+  canArchive(
+    item: StockItem
+  ) {
+    return item.status !== 'archived';
+  }
+
   isStopped(
     item: StockItem
   ) {
     return item.status === 'stopped';
+  }
+
+  async activate(
+    item: StockItem
+  ) {
+    try {
+      await this._stockService.activateProduct(item.id);
+      this._notificationsService.success('Product activated successfully');
+      this.stock.reload();
+    } catch (e) {
+      console.error('Failed to activate product', e);
+      this._notificationsService.error('Failed to activate product');
+    }
+  }
+
+  async deactivate(
+    item: StockItem
+  ) {
+    try {
+      await this._stockService.deactivateProduct(item.id);
+      this._notificationsService.success('Product deactivated successfully');
+      this.stock.reload();
+    } catch (e) {
+      console.error('Failed to deactivate product', e);
+      this._notificationsService.error('Failed to deactivate product');
+    }
+  }
+
+  async archive(
+    item: StockItem
+  ) {
+    try {
+      await this._stockService.archiveProduct(item.id);
+      this._notificationsService.success('Product archived successfully');
+      this.stock.reload();
+    } catch (e) {
+      console.error('Failed to archive product', e);
+      this._notificationsService.error('Failed to archive product');
+    }
   }
 }

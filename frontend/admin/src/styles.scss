@@ -19,7 +19,7 @@
   --secondary-color: #928785;
   --secondary-light-color: #f9f9f9;
 
-  --text-font:  -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+  --text-font: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
   --text-font-weight: 400;
   --text-color: var(--p-1);
 
@@ -94,4 +94,9 @@ p {
 .cm-host-expanded {
   display: block;
   width: 100%;
+}
+
+.cm-link {
+  color: inherit;
+  text-decoration: none;
 }

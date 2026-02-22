@@ -15,9 +15,15 @@ stockRoutes.get("/", async (c) => {
     return c.json({error: "Failed to fetch products"}, 500);
   }
 
+  const withArchived = c.req.query("withArchived") === "true";
+  const statuesToFetch = withArchived
+    ? ["active", "stopped", "archived"]
+    : ["active", "stopped"];
+
   const {data, error} = await supabase.from("stock_items")
     .select("*")
-    .order("created_at", {ascending: false});
+    .in("status", statuesToFetch)
+    .order("created_at", {ascending: false})
 
   if (error) {
     return c.json({error: "Failed to fetch products"}, 500);
@@ -51,5 +57,68 @@ stockRoutes.post(
     }, 201);
   }
 );
+
+stockRoutes.post('/:id/archive', async (c) => {
+  const supabase = c.get("supabaseClient");
+
+  if (!supabase) {
+    return c.json({error: "Failed to archive product"}, 500);
+  }
+
+  const {id} = c.req.param();
+
+  const {error} = await supabase.from("stock_items")
+    .update({
+      status: 'archived',
+      quantity: 0,
+    })
+    .eq('id', id);
+
+  if (error) {
+    return c.json({error: "Failed to archive product"}, 500);
+  }
+
+  return c.json({message: "Product archived successfully"});
+});
+
+stockRoutes.post('/:id/activate', async (c) => {
+  const supabase = c.get("supabaseClient");
+
+  if (!supabase) {
+    return c.json({error: "Failed to activate product"}, 500);
+  }
+
+  const {id} = c.req.param();
+
+  const {error} = await supabase.from("stock_items")
+    .update({status: 'active'})
+    .eq('id', id);
+
+  if (error) {
+    return c.json({error: "Failed to activate product"}, 500);
+  }
+
+  return c.json({message: "Product activated successfully"});
+});
+
+stockRoutes.post('/:id/deactivate', async (c) => {
+  const supabase = c.get("supabaseClient");
+
+  if (!supabase) {
+    return c.json({error: "Failed to deactivate product"}, 500);
+  }
+
+  const {id} = c.req.param();
+
+  const {error} = await supabase.from("stock_items")
+    .update({status: 'stopped'})
+    .eq('id', id);
+
+  if (error) {
+    return c.json({error: "Failed to deactivate product"}, 500);
+  }
+
+  return c.json({message: "Product deactivated successfully"});
+});
 
 export default stockRoutes;

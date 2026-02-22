@@ -11,7 +11,7 @@ export interface StockItem {
   price: number
   cost_price: number
   is_service: boolean
-  status: 'active' | 'stopped'
+  status: 'active' | 'stopped' | 'archived'
   created_at: string
   stopped_at: string | null
 }
@@ -25,10 +25,15 @@ export class StockService {
 
   private readonly _httpClient = inject(HttpClient);
 
-  getProducts() {
+  getProducts(params: { withArchived: boolean }) {
     return this._httpClient.get<StockItem[]>(
       environment.worker_url + '/api/admin/products',
-      {withCredentials: true},
+      {
+        withCredentials: true,
+        params: {
+          withArchived: params.withArchived ? 'true' : 'false',
+        }
+      },
     );
   }
 
@@ -62,15 +67,6 @@ export class StockService {
     return firstValueFrom(
       this._httpClient.post(
         environment.worker_url + `/api/admin/products/${id}/archive`,
-        {withCredentials: true},
-      )
-    );
-  }
-
-  deactivateProduct(id: number) {
-    return firstValueFrom(
-      this._httpClient.post(
-        environment.worker_url + `/api/admin/products/${id}/deactivate`,
         {},
         {withCredentials: true},
       )
@@ -81,6 +77,16 @@ export class StockService {
     return firstValueFrom(
       this._httpClient.post(
         environment.worker_url + `/api/admin/products/${id}/activate`,
+        {},
+        {withCredentials: true},
+      )
+    );
+  }
+
+  deactivateProduct(id: number) {
+    return firstValueFrom(
+      this._httpClient.post(
+        environment.worker_url + `/api/admin/products/${id}/deactivate`,
         {},
         {withCredentials: true},
       )
