@@ -1,23 +1,21 @@
 import {Component} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
-import {ContainerComponent} from './shared/ui/layout/container.component';
 
 
 @Component({
   selector: 'app-root',
   imports: [
-    RouterOutlet,
-    ContainerComponent
+    RouterOutlet
   ],
   template: `
-    <cm-container>
-      <router-outlet></router-outlet>
-    </cm-container>
+    <router-outlet></router-outlet>
   `,
   styles: `
     :host {
-      display: block;
+      display: flex;
       height: 100dvh;
+      padding: 32px;
+      overflow-y: auto;
     }
   `
 })

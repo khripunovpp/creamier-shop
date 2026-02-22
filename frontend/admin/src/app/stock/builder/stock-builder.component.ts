@@ -22,6 +22,9 @@ export interface StockItemModel {
 
 @Component({
   selector: 'cm-stock-builder',
+  host: {
+    class: 'cm-host-expanded'
+  },
   template: `
     <cm-flex-column>
       <cm-flex-row size="small" [center]="true">
@@ -88,7 +91,6 @@ export interface StockItemModel {
   ],
   styles: `
     :host {
-      display: block;
       --control-bg: #fff;
     }
   `

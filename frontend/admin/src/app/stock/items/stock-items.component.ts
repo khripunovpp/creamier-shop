@@ -12,6 +12,9 @@ import {firstValueFrom} from 'rxjs';
 
 @Component({
   selector: 'cm-stock-items',
+  host: {
+    class: 'cm-host-expanded'
+  },
   template: `
     <cm-flex-column>
       <cm-flex-row size="small" [center]="true">
@@ -71,9 +74,6 @@ import {firstValueFrom} from 'rxjs';
     HomeLinkComponent
   ],
   styles: `
-    :host {
-      display: block;
-    }
   `
 })
 export class StockItemsComponent {

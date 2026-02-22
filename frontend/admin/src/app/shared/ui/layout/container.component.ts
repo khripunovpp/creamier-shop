@@ -3,40 +3,25 @@ import {Component, input} from '@angular/core';
 @Component({
   selector: 'cm-container',
   standalone: true,
+  host: {
+    class: 'container',
+    '[class.compact]': 'compact()'
+  },
   template: `
-    <section [class.compact]="compact()"
-             class="container">
-      <ng-content></ng-content>
-    </section>`,
+    <ng-content></ng-content>
+  `,
   styles: [
     `
       :host {
         display: flex;
+        flex-direction: column;
         height: 100%;
-        padding: 0 32px;
+        margin: 0 auto;
+        max-width: var(--container-width);
 
         @media (max-width: 768px) {
           padding: 0 16px;
         }
-      }
-
-      .container {
-        display: flex;
-        flex-direction: column;
-        margin: 0 auto;
-        width: 100%;
-        max-width: var(--container-width);
-        gap: 32px;
-      }
-
-      @media (max-width:768px) {
-        .container {
-          gap: 16px;
-        }
-      }
-
-      .container.compact {
-        gap: 0 !important;
       }
     `
   ]

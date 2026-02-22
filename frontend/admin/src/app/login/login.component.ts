@@ -10,6 +10,7 @@ import {NotificationsService} from '../shared/services/notifications.service';
 import {environment} from '../../env/environment';
 import {Router} from '@angular/router';
 import {RoutesEnum} from '../routes.enum';
+import {ContainerComponent} from '../shared/ui/layout/container.component';
 
 interface LoginData {
   email: string;
@@ -19,26 +20,28 @@ interface LoginData {
 @Component({
   selector: 'cm-login',
   template: `
-    <cm-card>
-      <form (submit)="onSubmit($event)" novalidate>
-        <cm-flex-column size="medium">
-          <cm-flex-column size="small">
-            <cm-input inputType="email"
-                      placeholder="Email"
-                      [formField]="loginForm.email"/>
-            <cm-input inputType="password"
-                      placeholder="Password"
-                      [formField]="loginForm.password"/>
+    <cm-container>
+      <cm-card>
+        <form (submit)="onSubmit($event)" novalidate>
+          <cm-flex-column size="medium">
+            <cm-flex-column size="small">
+              <cm-input inputType="email"
+                        placeholder="Email"
+                        [formField]="loginForm.email"/>
+              <cm-input inputType="password"
+                        placeholder="Password"
+                        [formField]="loginForm.password"/>
+            </cm-flex-column>
+
+            <cm-button type="submit">Log In</cm-button>
           </cm-flex-column>
-
-          <cm-button type="submit">Log In</cm-button>
-        </cm-flex-column>
-      </form>
-    </cm-card>
-
+        </form>
+      </cm-card>
+    </cm-container>
   `,
   styles: `
     :host {
+      display: block;
       margin: auto;
       width: 100%;
       max-width: 400px;
@@ -49,7 +52,8 @@ interface LoginData {
     FormField,
     ButtonComponent,
     CardComponent,
-    FlexColumnComponent
+    FlexColumnComponent,
+    ContainerComponent
   ]
 })
 export class LoginComponent {
