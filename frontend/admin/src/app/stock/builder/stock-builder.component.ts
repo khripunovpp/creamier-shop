@@ -1,4 +1,4 @@
-import {Component, inject, signal} from '@angular/core';
+import {Component, effect, inject, resource, signal} from '@angular/core';
 import {form, FormField, required} from '@angular/forms/signals';
 import {FlexColumnComponent} from '../../shared/ui/layout/flex-column.component';
 import {FlexRowComponent} from '../../shared/ui/layout/flex-row.component';
@@ -9,10 +9,11 @@ import {NumberInputComponent} from '../../shared/ui/controls/number-input.compon
 import {ControlComponent} from '../../shared/ui/controls/control-item/control.component';
 import {ButtonComponent} from '../../shared/ui/controls/button/button.component';
 import {StockService} from '../stock.service';
-import {finalize} from 'rxjs';
+import {finalize, firstValueFrom} from 'rxjs';
 import {NotificationsService} from '../../shared/services/notifications.service';
 import {ContainerComponent} from '../../shared/ui/layout/container.component';
 import {InlineCircleLoaderComponent} from '../../shared/ui/inline-circle-loader.component';
+import {injectParams} from '../../shared/helpers/route.helpers';
 
 export interface StockItemModel {
   name: string
@@ -34,9 +35,9 @@ export interface StockItemModel {
           <cm-back-link [segments]="['/stock']"></cm-back-link>
           <cm-title>New Stock Item</cm-title>
 
-          <!--        @if (stock.isLoading()) {-->
-          <!--          <cm-inline-circle-loader></cm-inline-circle-loader>-->
-          <!--        }-->
+          @if (stored.isLoading()) {
+            <cm-inline-circle-loader></cm-inline-circle-loader>
+          }
         </cm-flex-row>
 
         <form (submit)="onSubmit($event)"
@@ -105,6 +106,7 @@ export class StockBuilderComponent {
   constructor() {
   }
 
+  readonly uuid = injectParams<string>('uuid');
   readonly stockItemModel = signal<StockItemModel>({
     name: '',
     description: '',
@@ -123,8 +125,53 @@ export class StockBuilderComponent {
     }
   );
   readonly loading = signal(false);
+  readonly storedEffect = effect(() => {
+    const value = this.stored.value();
+    if (value) {
+      this.stockItemModel.set({
+        name: value.name,
+        description: value.description,
+        price: value.price,
+        quantity: value.quantity,
+        cost_price: value.cost_price
+      });
+    }
+  })
   private readonly _stockService = inject(StockService);
+  readonly stored = resource({
+    params: () => ({uuid: this.uuid()}),
+    loader: ({params}) => {
+      if (!params.uuid) {
+        return Promise.resolve(null);
+      }
+      return firstValueFrom(this._stockService.getOneProduct(params!.uuid));
+    },
+  });
   private readonly _notificationsService = inject(NotificationsService);
+
+  onSubmit(event: Event) {
+    event.preventDefault();
+    if (this.stockItemForm().invalid()) {
+      this._notificationsService.warning('Please fill in all required fields correctly.');
+      return;
+    }
+    this.loading.set(true);
+    const request = this.uuid()
+      ? this._stockService.updateProduct(this.uuid()!, this._getModelValue())
+      : this._stockService.createProduct(this._getModelValue());
+
+    request
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: () => {
+          this._notificationsService.success('Stock item created successfully.');
+        },
+        error: (error) => {
+          this._notificationsService.error('Failed to create stock item. Please try again.');
+          console.error('Error creating stock item:', error);
+        },
+      })
+  }
 
   private _getModelValue() {
     const model = this.stockItemModel();
@@ -135,32 +182,5 @@ export class StockBuilderComponent {
       quantity: +model.quantity,
       cost_price: +model.cost_price
     }
-  }
-
-  onSubmit(event: Event) {
-    event.preventDefault();
-    if (this.stockItemForm().invalid()) {
-      this._notificationsService.warning('Please fill in all required fields correctly.');
-      return;
-    }
-    this.loading.set(true);
-    this._stockService.createProduct(this._getModelValue())
-      .pipe(finalize(() => this.loading.set(false)))
-      .subscribe({
-        next: (item) => {
-          this._notificationsService.success('Stock item created successfully.');
-          this.stockItemForm().reset({
-            name: '',
-            description: '',
-            price: 0,
-            quantity: 0,
-            cost_price: 0
-          });
-        },
-        error: (error) => {
-          this._notificationsService.error('Failed to create stock item. Please try again.');
-          console.error('Error creating stock item:', error);
-        },
-      })
   }
 }

@@ -25,14 +25,23 @@ export class StockService {
 
   private readonly _httpClient = inject(HttpClient);
 
-  getProducts(params: { withArchived: boolean }) {
+  getProducts(params?: { withArchived: boolean }) {
     return this._httpClient.get<StockItem[]>(
       environment.worker_url + '/api/admin/products',
       {
         withCredentials: true,
         params: {
-          withArchived: params.withArchived ? 'true' : 'false',
+          withArchived: params?.withArchived ? 'true' : 'false',
         }
+      },
+    );
+  }
+
+  getOneProduct(id: string) {
+    return this._httpClient.get<StockItem>(
+      environment.worker_url + `/api/admin/products/${id}`,
+      {
+        withCredentials: true,
       },
     );
   }
@@ -58,6 +67,19 @@ export class StockService {
       {
         ...data,
         is_service: true,
+      },
+      {withCredentials: true}
+    );
+  }
+
+  updateProduct(
+    id: string,
+    data: Omit<StockItem, 'id' | 'created_at' | 'stopped_at' | 'status' | 'is_service'>,
+  ) {
+    return this._httpClient.put<StockItem>(
+      environment.worker_url + `/api/admin/products/${id}`,
+      {
+        ...data,
       },
       {withCredentials: true}
     );

@@ -28,7 +28,7 @@ const app = new Hono<{
 
 app.use("/api/admin/*", cors({
   origin: "http://localhost:4200", // твой фронт
-  allowMethods: ["GET", "POST", "OPTIONS"],
+  allowMethods: ["GET", "POST", "OPTIONS", "PUT"],
   allowHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
@@ -42,7 +42,7 @@ app.use("/api/auth/*", cors({
 
 app.use("/api/public/*", cors({
   origin: "http://localhost:4201", // твой фронт
-  allowMethods: ["GET", "POST", "OPTIONS"],
+  allowMethods: ["GET", "OPTIONS"],
   allowHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));

@@ -70,7 +70,7 @@ import {SwitchComponent} from '../../shared/ui/controls/switch.component';
               </thead>
               <tbody>
                 @for (item of stock.value(); track item) {
-                  <tr>
+                  <tr [class.cm-muted]="isArchived(item)">
                     <td>
                       <a class="cm-link"
                          [routerLink]="['/stock', item.id]">
@@ -78,6 +78,9 @@ import {SwitchComponent} from '../../shared/ui/controls/switch.component';
                       </a>
                       @if (isStopped(item)) {
                         <cm-badge>{{ item.status }}</cm-badge>
+                      }
+                      @if (isArchived(item)) {
+                        <cm-badge appearance="secondary">{{ item.status }}</cm-badge>
                       }
                     </td>
                     <td>
@@ -177,6 +180,12 @@ export class StockItemsComponent {
     item: StockItem
   ) {
     return item.status === 'stopped';
+  }
+
+  isArchived(
+    item: StockItem
+  ) {
+    return item.status === 'archived';
   }
 
   async activate(

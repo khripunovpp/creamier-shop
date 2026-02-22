@@ -32,6 +32,27 @@ stockRoutes.get("/", async (c) => {
   return c.json(data);
 });
 
+stockRoutes.get("/:id", async (c) => {
+  const supabase = c.get("supabaseClient");
+
+  if (!supabase) {
+    return c.json({error: "Failed to fetch product"}, 500);
+  }
+
+  const {id} = c.req.param();
+
+  const {data, error} = await supabase.from("stock_items")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    return c.json({error: "Failed to fetch product"}, 500);
+  }
+
+  return c.json(data);
+});
+
 stockRoutes.post(
   '/',
   zValidator('json', createStockItemScheme),
@@ -55,6 +76,31 @@ stockRoutes.post(
     return c.json({
       id: data.id,
     }, 201);
+  }
+);
+
+stockRoutes.put(
+  '/:id',
+  zValidator('json', createStockItemScheme.partial()),
+  async (c) => {
+    const supabase = c.get("supabaseClient");
+
+    if (!supabase) {
+      return c.json({error: "Failed to update product"}, 500);
+    }
+
+    const {id} = c.req.param();
+    const requestData = c.req.valid('json');
+
+    const {error} = await supabase.from("stock_items")
+      .update(requestData)
+      .eq('id', id);
+
+    if (error) {
+      return c.json({error: "Failed to update product"}, 500);
+    }
+
+    return c.json({message: "Product updated successfully"});
   }
 );
 
