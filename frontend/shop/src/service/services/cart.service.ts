@@ -40,6 +40,7 @@ export class CartService {
   initializeCart() {
     this._parseCart()
       .subscribe(cart => {
+        console.log('Parsed cart from localStorage:', cart);
         this._cart = cart;
         this._cartSubject.next(this._cart);
       });
@@ -128,10 +129,11 @@ export class CartService {
           if (Array.isArray(parsed)) {
             return parsed.map(cartItem => {
               const product = products.find(p => p.id === cartItem.itemId);
-              if (product) {
+              if (product?.quantity) {
+                const enoughStock = product.quantity >= cartItem.quantity;
                 return {
                   item: product,
-                  quantity: cartItem.quantity,
+                  quantity: enoughStock ? cartItem.quantity : product.quantity,
                 } as CartItem<Countable>;
               }
               return null;

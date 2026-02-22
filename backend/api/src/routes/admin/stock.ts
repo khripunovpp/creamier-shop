@@ -1,7 +1,7 @@
 import {Hono} from "hono";
 import {zValidator} from '@hono/zod-validator'
 import {Bindings, Variables} from "../../index";
-import {createStockItemScheme} from "../../schemes/create-stock-item.scheme";
+import {stockScheme, updateStockItemScheme} from "../../schemes/stock.scheme";
 
 const stockRoutes = new Hono<{
   Bindings: Bindings;
@@ -55,7 +55,7 @@ stockRoutes.get("/:id", async (c) => {
 
 stockRoutes.post(
   '/',
-  zValidator('json', createStockItemScheme),
+  zValidator('json', stockScheme),
   async (c) => {
     const supabase = c.get("supabaseClient");
 
@@ -81,7 +81,7 @@ stockRoutes.post(
 
 stockRoutes.put(
   '/:id',
-  zValidator('json', createStockItemScheme.partial()),
+  zValidator('json', updateStockItemScheme),
   async (c) => {
     const supabase = c.get("supabaseClient");
 

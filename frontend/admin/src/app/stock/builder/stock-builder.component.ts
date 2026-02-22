@@ -8,7 +8,7 @@ import {InputComponent} from '../../shared/ui/controls/input.component';
 import {NumberInputComponent} from '../../shared/ui/controls/number-input.component';
 import {ControlComponent} from '../../shared/ui/controls/control-item/control.component';
 import {ButtonComponent} from '../../shared/ui/controls/button/button.component';
-import {StockService} from '../stock.service';
+import {StockItem, StockService} from '../stock.service';
 import {finalize, firstValueFrom} from 'rxjs';
 import {NotificationsService} from '../../shared/services/notifications.service';
 import {ContainerComponent} from '../../shared/ui/layout/container.component';
@@ -64,10 +64,12 @@ export interface StockItemModel {
                                  [formField]="stockItemForm.cost_price"></cm-number-input>
               </cm-control>
 
-              <cm-control label="Quantity">
-                <cm-number-input placeholder=""
-                                 [formField]="stockItemForm.quantity"></cm-number-input>
-              </cm-control>
+              @if (!uuid()) {
+                <cm-control label="Quantity">
+                  <cm-number-input placeholder=""
+                                   [formField]="stockItemForm.quantity"></cm-number-input>
+                </cm-control>
+              }
             </cm-flex-row>
 
             <cm-flex-row size="small" [center]="true">

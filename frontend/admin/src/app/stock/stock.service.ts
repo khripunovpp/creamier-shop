@@ -52,7 +52,11 @@ export class StockService {
     return this._httpClient.post<StockItem>(
       environment.worker_url + '/api/admin/products',
       {
-        ...data,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        cost_price: data.cost_price,
+        quantity: data.quantity,
         is_service: false,
       },
       {withCredentials: true}
@@ -65,7 +69,10 @@ export class StockService {
     return this._httpClient.post<StockItem>(
       environment.worker_url + '/api/admin/products',
       {
-        ...data,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        cost_price: data.cost_price,
         is_service: true,
       },
       {withCredentials: true}
@@ -74,12 +81,15 @@ export class StockService {
 
   updateProduct(
     id: string,
-    data: Omit<StockItem, 'id' | 'created_at' | 'stopped_at' | 'status' | 'is_service'>,
+    data: Omit<StockItem, 'id' | 'created_at' | 'stopped_at' | 'status' | 'is_service' | 'quantity'>,
   ) {
     return this._httpClient.put<StockItem>(
       environment.worker_url + `/api/admin/products/${id}`,
       {
-        ...data,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        cost_price: data.cost_price,
       },
       {withCredentials: true}
     );

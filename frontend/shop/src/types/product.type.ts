@@ -1,8 +1,11 @@
 import {Countable} from './countable';
 
-export interface Product extends Countable {
+export interface Product
+  extends Countable {
   id: number
   name: string
   price: number
-  availableQuantity: number
+  status: 'active'
+  description: string
+  quantity: number
 }

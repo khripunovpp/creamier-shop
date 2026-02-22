@@ -6,6 +6,7 @@ SELECT "id",
        "name",
        "price",
        "description",
-       "status"
+       "status",
+       "quantity"
 FROM "public"."stock_items"
 WHERE "status" = 'active';
