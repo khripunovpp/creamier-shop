@@ -14,7 +14,11 @@ export interface Order {
   profit_amount: number
   payment_data: Record<string, any>
   comment: string | null
-  delivery_info: Record<string, any> | null
+  delivery_info: {
+    postalCode: string
+    addressLine1: string
+    addressLine2: string | null
+  }
   paid_at: string | null
   payment_method: 'cash' | 'card' | 'bank_transfer'
 }
