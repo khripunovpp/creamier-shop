@@ -1,13 +1,3 @@
--- orders creating
--- enums for payment method
-CREATE TYPE payment_methods AS ENUM ('cash', 'bank_transfer', 'card');
-
--- add delivery_info column, paid_at , payment_method is enum('cash', 'bank_transfer', 'card')
-ALTER TABLE orders
-    ADD COLUMN delivery_info JSONB,
-ADD COLUMN paid_at timestamp with time zone,
-ADD COLUMN payment_method payment_methods;
-
 
 -- Добавляем таблицу для хранения информации о клиентах
 create table if not exists customers (
@@ -25,13 +15,6 @@ create table if not exists order_rate_limits (
   client_key text primary key,
   last_order_at timestamptz not null
 );
-
--- Добавляем таблицу для хранения информации о товарах в заказе
-ALTER TYPE "public"."stock_operation" ADD VALUE 'make_order';
-
--- Добавляем колонку remain в stock_movements
-ALTER TABLE stock_movements
-ADD COLUMN remain integer;
 
 -- Создаём функцию для создания заказа с антиспамом и проверкой stock
 create or replace function create_order(
@@ -224,9 +207,8 @@ references customers(id)
 on delete set null;
 
 -- Ограничиваем доступ к функции и разрешаем только аутентифицированным пользователям
-revoke all on function create_order(text, text, text, jsonb) from public;
-grant execute on function create_order(text, text, text, jsonb) to authenticated;
-
+revoke all on function create_order(text, text, text, text, text, text, jsonb, timestamptz, jsonb, text) from public;
+grant execute on function create_order(text, text, text, text, text, text, jsonb, timestamptz, jsonb, text) to authenticated;
 
 -- Включаем RLS
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;

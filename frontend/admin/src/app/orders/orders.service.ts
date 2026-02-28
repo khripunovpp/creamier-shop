@@ -3,16 +3,16 @@ import {HttpClient} from '@angular/common/http';
 import {environment} from '../../env/environment';
 
 export interface Order {
-
+  id: string
   user_id: number
   created_at: string
   completed_at: string | null
   delivery_date: string | null
-  status: 'pending' | 'completed' | 'cancelled'
+  status: 'created' | 'paid' | 'delivered' | 'cancelled' | 'returned'
   total_amount: number
   discount_amount: number
   profit_amount: number
-  payment_data: Record<string, any>
+  payment_data: string
   comment: string | null
   delivery_info: {
     postalCode: string
@@ -20,7 +20,7 @@ export interface Order {
     addressLine2: string | null
   }
   paid_at: string | null
-  payment_method: 'cash' | 'card' | 'bank_transfer'
+  payment_method: 'cash' | 'bank_transfer'
 }
 
 @Injectable({
@@ -44,6 +44,33 @@ export class OrdersService {
   ) {
     return this._httpClient.get<Order>(
       environment.worker_url + `/api/admin/orders/${id}`,
+      {withCredentials: true,},
+    );
+  }
+
+  markOrderPaid(
+    id: string,
+    payload: {
+      payment_method: Order['payment_method'],
+      payment_data: Order['payment_data'],
+    }
+  ) {
+    return this._httpClient.post(
+      environment.worker_url + `/api/admin/orders/${id}/mark_paid`,
+      {
+        payment_method: payload.payment_method,
+        payment_data: payload.payment_data,
+      },
+      {withCredentials: true,},
+    );
+  }
+
+  markOrderDelivered(
+    id: string,
+  ) {
+    return this._httpClient.post(
+      environment.worker_url + `/api/admin/orders/${id}/mark_delivered`,
+      null,
       {withCredentials: true,},
     );
   }

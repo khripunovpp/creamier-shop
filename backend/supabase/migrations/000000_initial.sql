@@ -54,11 +54,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
 CREATE TYPE "public"."order_status" AS ENUM (
     'created',
-    'assembling',
-    'in_delivery',
     'delivered',
     'cancelled',
-    'returned'
+    'returned',
+    'paid'
 );
 
 
@@ -68,7 +67,7 @@ ALTER TYPE "public"."order_status" OWNER TO "postgres";
 CREATE TYPE "public"."stock_operation" AS ENUM (
     'add',
     'remove',
-    'adjust'
+    'make_order'
 );
 
 
@@ -130,6 +129,7 @@ CREATE TABLE IF NOT EXISTS "public"."order_items" (
     "order_id" "uuid",
     "stock_item_id" "uuid",
     "price" numeric NOT NULL,
+    "quantity" numeric NOT NULL,
     "cost_price" numeric NOT NULL,
     "is_service" boolean DEFAULT false
 );
@@ -138,17 +138,22 @@ CREATE TABLE IF NOT EXISTS "public"."order_items" (
 ALTER TABLE "public"."order_items" OWNER TO "postgres";
 
 
+CREATE TYPE "public"."payment_methods" AS ENUM ('cash', 'bank_transfer');
+
 CREATE TABLE IF NOT EXISTS "public"."orders" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "user_id" "uuid",
     "created_at" timestamp with time zone DEFAULT "now"(),
     "completed_at" timestamp with time zone,
     "delivery_date" timestamp with time zone,
+    "delivery_info" "jsonb",
     "status" "public"."order_status" DEFAULT 'created'::"public"."order_status",
     "total_amount" numeric DEFAULT 0 NOT NULL,
     "discount_amount" numeric DEFAULT 0,
     "profit_amount" numeric DEFAULT 0,
-    "payment_data" "jsonb",
+    "payment_data" "text",
+    "payment_method" "public"."payment_methods",
+    "paid_at" timestamp with time zone,
     "comment" "text"
 );
 
@@ -200,6 +205,7 @@ CREATE TABLE IF NOT EXISTS "public"."stock_movements" (
     "stock_item_id" "uuid",
     "operation" "public"."stock_operation" NOT NULL,
     "quantity" numeric NOT NULL,
+    "remain" numeric NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"()
 );
 

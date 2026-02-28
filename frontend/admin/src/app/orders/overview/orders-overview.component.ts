@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, inject, resource} from '@angular/core';
-import {OrdersService} from '../orders.service';
+import {Order, OrdersService} from '../orders.service';
 import {TableCardComponent} from '../../shared/ui/card/table-card.component';
 import {InlineCircleLoaderComponent} from '../../shared/ui/inline-circle-loader.component';
 import {FlexRowComponent} from '../../shared/ui/layout/flex-row.component';
@@ -10,8 +10,10 @@ import {firstValueFrom} from 'rxjs';
 import {ContainerComponent} from '../../shared/ui/layout/container.component';
 import {FormsModule} from '@angular/forms';
 import {NotificationsService} from '../../shared/services/notifications.service';
-import {DatePipe, JsonPipe} from '@angular/common';
+import {DatePipe} from '@angular/common';
 import {ButtonComponent} from '../../shared/ui/controls/button/button.component';
+import {canMarkDelivered, canMarkPaidDelivered, canMarkPaidUndelivered} from '../orders.helpers';
+import {BadgeComponent} from '../../shared/ui/badge.component';
 
 @Component({
   selector: 'cm-orders-overview',
@@ -52,6 +54,9 @@ import {ButtonComponent} from '../../shared/ui/controls/button/button.component'
                 @for (item of orders.value(); track item) {
                   <tr>
                     <td>
+                      @if (isNewOrder(item)) {
+                        <cm-badge appearance="success">New</cm-badge><br>
+                      }
                       {{ item.delivery_info.postalCode }}<br>
                       {{ item.delivery_info.addressLine1 }}<br>
                       {{ item.delivery_info.addressLine2 }}<br>
@@ -71,28 +76,22 @@ import {ButtonComponent} from '../../shared/ui/controls/button/button.component'
                       <cm-flex-column size="tiny" position="end">
                         <cm-flex-row size="tiny">
 
-                          <cm-button appearance="success"
-                                     size="tiny">
-                            Activate
-                          </cm-button>
+                          @if (canMarkPaid(item)) {
+                            <cm-button appearance="warning"
+                                       (click)="onMarkPaid(item)"
+                                       size="tiny">
+                              Mark Paid
+                            </cm-button>
+                          }
 
-                          <cm-button size="tiny"
-                                     appearance="warning">
-                            Deactivate
-                          </cm-button>
-
-                          <cm-button size="tiny"
-                                     appearance="primary">
-                            Adjust
-                          </cm-button>
-
+                          @if (canMarkDelivered(item)) {
+                            <cm-button appearance="success"
+                                       (click)="onMarkDelivered(item)"
+                                       size="tiny">
+                              Mark Delivered
+                            </cm-button>
+                          }
                         </cm-flex-row>
-
-                        <cm-button size="tiny"
-                                   [flat]="true"
-                                   appearance="danger">
-                          Archive
-                        </cm-button>
                       </cm-flex-column>
                     </td>
                   </tr>
@@ -113,9 +112,9 @@ import {ButtonComponent} from '../../shared/ui/controls/button/button.component'
     HomeLinkComponent,
     ContainerComponent,
     FormsModule,
-    JsonPipe,
     DatePipe,
     ButtonComponent,
+    BadgeComponent,
 
   ],
   styles: `
@@ -135,4 +134,47 @@ export class OrdersOverviewComponent {
   });
   private readonly _notificationsService = inject(NotificationsService);
 
+  canMarkPaid(order: Order) {
+    if (order.paid_at) return false;
+    return canMarkPaidDelivered(order)
+      || canMarkPaidUndelivered(order);
+  }
+
+  canMarkDelivered(order: Order) {
+    return canMarkDelivered(order);
+  }
+
+  onMarkPaid(order: Order) {
+    this._ordersService.markOrderPaid(order.id, {
+      payment_method: 'cash',
+      payment_data: '',
+    }).subscribe({
+      next: () => {
+        this._notificationsService.success("Order marked as paid");
+        this.orders.reload();
+      },
+      error: (err) => {
+        this._notificationsService.error("Failed to mark order as paid");
+        console.error("Failed to mark order as paid", err);
+      }
+    });
+  }
+
+  onMarkDelivered(order: Order) {
+    this._ordersService.markOrderDelivered(order.id)
+      .subscribe({
+        next: () => {
+          this._notificationsService.success("Order marked as delivered");
+          this.orders.reload();
+        },
+        error: (err) => {
+          this._notificationsService.error("Failed to mark order as delivered");
+          console.error("Failed to mark order as delivered", err);
+        }
+      });
+  }
+
+  isNewOrder(order: Order) {
+    return order.status === 'created';
+  }
 }
