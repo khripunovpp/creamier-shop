@@ -15,7 +15,5 @@ export class ProductsService {
 
   getProducts$ = this._apiService.get<Product[]>(
     environment.worker_url + '/api/public/products',
-  ).pipe(
-    shareReplay(),
   );
 }

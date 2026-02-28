@@ -129,7 +129,6 @@ CREATE TABLE IF NOT EXISTS "public"."order_items" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "order_id" "uuid",
     "stock_item_id" "uuid",
-    "quantity" numeric NOT NULL,
     "price" numeric NOT NULL,
     "cost_price" numeric NOT NULL,
     "is_service" boolean DEFAULT false

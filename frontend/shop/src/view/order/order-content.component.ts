@@ -1,6 +1,7 @@
 import {Component, inject} from '@angular/core';
 import {AsyncPipe} from '@angular/common';
 import {OrderService} from '../../service/services/order.service';
+import {CartService} from '../../service/services/cart.service';
 
 @Component({
   selector: 'cmh-order-content',
@@ -32,13 +33,14 @@ export class OrderContentComponent {
   }
 
   readonly orderService = inject(OrderService);
+  readonly cartService = inject(CartService);
 
   onPlaceOrder(
     order: any
   ) {
     this.orderService.createOrder(order).subscribe({
       next: (response) => {
-        console.log('Order created successfully:', response);
+        this.cartService.clearCart();
       },
       error: (error) => {
         console.error('Error creating order:', error);

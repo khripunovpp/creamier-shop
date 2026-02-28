@@ -34,16 +34,23 @@ export class OrderService {
   createOrder(
     order: Order
   ) {
+    const parameters = {
+      items: order.cart.map(item => ({
+        id: item.item.id,
+        quantity: item.quantity,
+      })),
+      name: order.delivery.name,
+      email: order.delivery.email,
+      phone_number: order.delivery.phoneNumber,
+      telegram: order.delivery.telegram,
+      whatsapp: order.delivery.whatsapp,
+      delivery_date: new Date(order.delivery.time).toISOString(),
+      delivery_info: order.delivery.shipping,
+      comment: order.delivery.comment,
+    };
     return this._apiService.post(
       environment.worker_url + '/api/public/orders/create',
-      {
-        items: order.cart.map(item => ({
-          id: item.item.id,
-          quantity: item.quantity,
-        })),
-        name: 'Mr. John Doe',
-        email: 'supersecretemail@not.com',
-      }
+      parameters
     );
   }
 }

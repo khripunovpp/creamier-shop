@@ -46,6 +46,7 @@ ordersPublicRoutes.get("/products/:id", async (c) => {
   return c.json(data);
 });
 
+// TODO validation, error handling, logging
 ordersPublicRoutes.post("/orders/create", async (c) => {
   const supabase = createClient(
     c.env.SUPABASE_URL,
@@ -58,13 +59,25 @@ ordersPublicRoutes.post("/orders/create", async (c) => {
     items,
     email,
     name,
+    delivery_date,
+    delivery_info,
+    comment,
+    phone_number,
+    telegram,
+    whatsapp,
   } = await c.req.json();
 
   const {data, error} = await supabase.rpc("create_order", {
     p_client_key: info.remote.address,
-    p_email: email,
     p_name: name,
+    p_email: email,
+    p_phone_number: phone_number,
+    p_telegram: telegram,
+    p_whatsapp: whatsapp,
     p_items: items,
+    p_delivery_date: delivery_date,
+    p_delivery_info: delivery_info,
+    p_comment: comment,
   });
   if (error) {
     console.error("Order creation failed (internal)", error);

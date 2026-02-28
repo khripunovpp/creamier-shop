@@ -12,8 +12,11 @@ ADD COLUMN payment_method payment_methods;
 -- Добавляем таблицу для хранения информации о клиентах
 create table if not exists customers (
   id uuid primary key default gen_random_uuid(),
-  email text unique not null,
   name text,
+  email text unique,
+    phone_number text unique,
+    telegram text unique,
+    whatsapp text unique,
   created_at timestamptz not null default now()
 );
 
@@ -33,9 +36,15 @@ ADD COLUMN remain integer;
 -- Создаём функцию для создания заказа с антиспамом и проверкой stock
 create or replace function create_order(
   p_client_key text,
-  p_email text,
   p_name text,
-  p_items jsonb
+  p_email text,
+  p_phone_number text,
+  p_telegram text,
+  p_whatsapp text,
+  p_items jsonb,
+  p_delivery_date timestamptz,
+  p_delivery_info jsonb,
+  p_comment text
 )
 returns uuid
 language plpgsql
@@ -48,8 +57,11 @@ declare
   v_now timestamptz := now();
   v_last_order timestamptz;
   v_stock integer;
-  v_price integer;
-  v_cost_price integer;
+  v_price numeric;
+  v_cost_price numeric;
+  v_total_amount numeric := 0;
+  v_profit_amount numeric := 0;
+  v_qty integer;
 begin
 
   -------------------------------------------------
@@ -81,27 +93,40 @@ begin
   select id
   into v_user_id
   from customers
-  where email = lower(p_email);
+  where email = lower(p_email)
+      or phone_number = p_phone_number
+      or telegram = p_telegram
+      or whatsapp = p_whatsapp
+  limit 1;
 
   if v_user_id is null then
-    insert into customers (email, name)
-    values (lower(p_email), p_name)
+    insert into customers (name, email, phone_number, telegram, whatsapp)
+    values (p_name, lower(p_email), p_phone_number, p_telegram, p_whatsapp)
     returning id into v_user_id;
   end if;
 
-
   -------------------------------------------------
-  -- 3️⃣ Создание заказа
+  -- 3️⃣ Создание заказа (total/profit будут обновлены после обработки товаров)
   -------------------------------------------------
   insert into orders (
     user_id,
     status,
-    created_at
+    created_at,
+    delivery_date,
+    total_amount,
+    profit_amount,
+    comment,
+    delivery_info
   )
   values (
     v_user_id,
     'created',
-    v_now
+    v_now,
+    p_delivery_date,
+    0,
+    0,
+    p_comment,
+    p_delivery_info
   )
   returning id into v_order_id;
 
@@ -113,23 +138,35 @@ begin
     select * from jsonb_array_elements(p_items)
   loop
 
-    select quantity, price, cost_price
-    into v_stock, v_price, v_cost_price
+    v_qty := (v_item->>'quantity')::int;
+
+    -- Получаем цены из stock_items и блокируем строку
+    select price, cost_price
+    into v_price, v_cost_price
     from stock_items
     where id = (v_item->>'id')::uuid
     for update;
 
+    if not found then
+      raise exception 'Product not found: %', (v_item->>'id');
+    end if;
+
+    -- Получаем текущий остаток из последней записи stock_movements
+    select remain
+    into v_stock
+    from stock_movements
+    where stock_item_id = (v_item->>'id')::uuid
+    order by created_at desc, id desc
+    limit 1;
+
+    -- Если движений ещё не было — остаток считаем 0
     if v_stock is null then
-      raise exception 'Product not found';
+      v_stock := 0;
     end if;
 
-    if v_stock < (v_item->>'quantity')::int then
-      raise exception 'Not enough stock';
+    if v_stock < v_qty then
+      raise exception 'Not enough stock for product %', (v_item->>'id');
     end if;
-
-    update stock_items
-    set quantity = quantity - (v_item->>'quantity')::int
-    where id = (v_item->>'id')::uuid;
 
     insert into order_items (
       order_id,
@@ -141,7 +178,7 @@ begin
     values (
       v_order_id,
       (v_item->>'id')::uuid,
-      (v_item->>'quantity')::int,
+      v_qty,
       v_price,
       v_cost_price
     );
@@ -150,16 +187,29 @@ begin
       stock_item_id,
       quantity,
       operation,
-      created_at
+      created_at,
+      remain
     )
     values (
       (v_item->>'id')::uuid,
-      (v_item->>'quantity')::int,
+      v_qty,
       'make_order',
-      v_now
+      v_now,
+      v_stock - v_qty
     );
 
+    v_total_amount  := v_total_amount  + v_price      * v_qty;
+    v_profit_amount := v_profit_amount + (v_price - v_cost_price) * v_qty;
+
   end loop;
+
+  -------------------------------------------------
+  -- 5️⃣ Обновляем итоговые суммы заказа
+  -------------------------------------------------
+  update orders
+  set total_amount  = v_total_amount,
+      profit_amount = v_profit_amount
+  where id = v_order_id;
 
   return v_order_id;
 

@@ -5,16 +5,20 @@ export interface DeliveryDetails {
   shipping: ShippingDetails
   time: number
   phoneNumber: string
+  email: string
+  telegram: string
+  whatsapp: string
   name: string
+  comment: string
 }
 
 export interface ShippingDetails {
   postalCode: string
   addressLine1: string
-  addressLine2?: string
+  addressLine2: string
 }
 
 export interface Order {
   cart: CartItem<Countable>[]
-  delivery?: DeliveryDetails
+  delivery: DeliveryDetails
 }
