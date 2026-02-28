@@ -7,6 +7,7 @@ import {Product} from '../../types/product.type';
 import {combineLatestWith, map, Observable} from 'rxjs';
 import {CartItem} from '../../types/cart.type';
 import {ContainerComponent} from '../layout/container.component';
+import {tap} from 'rxjs/operators';
 
 @Component({
   selector: 'cmh-products',
@@ -15,7 +16,7 @@ import {ContainerComponent} from '../layout/container.component';
       <section class="products">
         <cmh-container>
           <div class="products__list">
-            @for (item of (items$ | async); track item.product) {
+            @for (item of (items$ | async); track item.product.id + '-' + (item.cartItem ? item.cartItem.quantity : '0')) {
               <cmh-product-item (onAddToCart)="onAddToCartHandler(item.product)"
                                 (onIncrementCount)="onIncrementCountHandler(item.product)"
                                 (onDecrementCount)="onDecrementCountHandler(item.product)"
@@ -58,6 +59,13 @@ export class ProductsComponent {
   readonly products$ = this._productsService.getProducts$;
   readonly cart$ = this._cartService.cart$;
 
+  readonly trackByProductId = (index: number, item: {
+    product: Product
+    cartItem: CartItem<Product> | undefined
+  }) => {
+    return item.product.id + '-' + (item.cartItem ? item.cartItem.quantity : '0');
+  };
+
   readonly items$: Observable<{
     product: Product
     cartItem: CartItem<Product> | undefined
@@ -72,6 +80,7 @@ export class ProductsComponent {
         };
       });
     }),
+    tap(items => console.log('Combined products with cart items:', items)),
   );
 
   onAddToCartHandler(product: Product) {

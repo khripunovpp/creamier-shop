@@ -40,46 +40,66 @@ export class CartService {
   initializeCart() {
     this._parseCart()
       .subscribe(cart => {
-        console.log('Parsed cart from localStorage:', cart);
         this._cart = cart;
         this._cartSubject.next(this._cart);
       });
   }
 
-  addToCart(item: CartItem<Countable>) {
+  addToCart(cartItem: CartItem<Countable>) {
     const existingItem = this._cart
-      .find(cartItem => cartItem.item.id === item.item.id);
+      .find(ci => ci.item.id === cartItem.item.id);
 
-    if (existingItem) {
-      existingItem.quantity += item.quantity;
+    if (!cartItem.item.available_quantity) return;
+
+    if (existingItem && (existingItem.quantity + cartItem.quantity) <= cartItem.item.available_quantity) {
+      this._cart = this._cart.map(ci =>
+        ci.item.id === cartItem.item.id ? {...ci, quantity: ci.quantity + cartItem.quantity} : ci
+      );
+    } else if (existingItem) {
+      this._cart = this._cart.map(ci =>
+        ci.item.id === cartItem.item.id ? {...ci, quantity: cartItem.item.available_quantity} : ci
+      );
     } else {
-      this._cart.push(item);
+      this._cart = [...this._cart, cartItem];
     }
     this._emitCart();
   }
 
   incrementCount(item: Countable) {
     const existingItem = this._cart
-      .find(cartItem => cartItem.item.id === item.id);
+      .find(ci => ci.item.id === item.id);
 
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
+    if (!item.available_quantity) return;
+
+    if (existingItem && existingItem.quantity < item.available_quantity) {
+      this._cart = this._cart.map(ci =>
+        ci.item.id === item.id ? {...ci, quantity: ci.quantity + 1} : ci
+      );
+      this._emitCart();
+    } else if (!existingItem) {
       this.addToCart({
         item,
         quantity: 1,
       });
     }
-    this._emitCart();
   }
 
   decrementCount(item: Countable) {
     const existingItem = this._cart
-      .find(cartItem => cartItem.item.id === item.id);
+      .find(ci => ci.item.id === item.id);
 
-    if (existingItem && existingItem.quantity > 1) {
-      existingItem.quantity -= 1;
-    } else if (existingItem) {
+    if (!existingItem) return;
+
+    if (existingItem.quantity > item.available_quantity) {
+      this._cart = this._cart.map(ci =>
+        ci.item.id === item.id ? {...ci, quantity: item.available_quantity} : ci
+      );
+      this._emitCart();
+    } else if (existingItem.quantity > 1) {
+      this._cart = this._cart.map(ci =>
+        ci.item.id === item.id ? {...ci, quantity: ci.quantity - 1} : ci
+      );
+    } else {
       this.removeFromCart(existingItem);
     }
     this._emitCart();
@@ -87,10 +107,10 @@ export class CartService {
 
   removeFromCart(item: CartItem<Countable>) {
     const index = this._cart
-      .findIndex(cartItem => cartItem.item.id === item.item.id);
+      .findIndex(ci => ci.item.id === item.item.id);
 
     if (index !== -1) {
-      this._cart.splice(index, 1);
+      this._cart = this._cart.filter((_, i) => i !== index);
       this._emitCart();
     }
   }
@@ -129,11 +149,11 @@ export class CartService {
           if (Array.isArray(parsed)) {
             return parsed.map(cartItem => {
               const product = products.find(p => p.id === cartItem.itemId);
-              if (product?.quantity) {
-                const enoughStock = product.quantity >= cartItem.quantity;
+              if (product?.available_quantity) {
+                const enoughStock = product.available_quantity >= cartItem.quantity;
                 return {
                   item: product,
-                  quantity: enoughStock ? cartItem.quantity : product.quantity,
+                  quantity: enoughStock ? cartItem.quantity : product.available_quantity,
                 } as CartItem<Countable>;
               }
               return null;

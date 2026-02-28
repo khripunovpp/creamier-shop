@@ -1,6 +1,5 @@
 DROP VIEW IF EXISTS public.public_products;
 
-
 CREATE OR REPLACE VIEW public.public_products AS
 SELECT
     si.id,
@@ -8,7 +7,7 @@ SELECT
     si.price,
     si.description,
     si.status,
-    COALESCE(sm.remain, 0) AS quantity
+    COALESCE(sm.remain, 0) AS available_quantity
 FROM stock_items si
 LEFT JOIN LATERAL (
     SELECT remain

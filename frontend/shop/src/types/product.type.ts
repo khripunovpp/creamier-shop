@@ -7,5 +7,5 @@ export interface Product
   price: number
   status: 'active'
   description: string
-  quantity: number
+  available_quantity: number
 }

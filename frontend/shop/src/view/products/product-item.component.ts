@@ -1,9 +1,10 @@
-import {Component, input, output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, input, output} from '@angular/core';
 import {Product} from '../../types/product.type';
 import {CartItem} from '../../types/cart.type';
 
 @Component({
   selector: 'cmh-product-item',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (product(); as product) {
       <div class="product-item">
@@ -14,16 +15,18 @@ import {CartItem} from '../../types/cart.type';
           @if (cartItem()) {
             <div class="product-item__counter">
               <button type="button"
+                      [disabled]="!canDecrement()"
                       class="product-item__counter-btn"
                       (click)="onDecrementCount.emit()">-
               </button>
               {{ cartItem()!.quantity }}
               <button type="button"
+                      [disabled]="!canIncrement()"
                       class="product-item__counter-btn"
                       (click)="onIncrementCount.emit()">+
               </button>
             </div>
-          } @else if (product.quantity > 0) {
+          } @else if (product.available_quantity > 0) {
             <button type="button"
                     class="product-item__add-btn"
                     (click)="onAddToCart.emit()">
@@ -101,4 +104,12 @@ export class ProductItemComponent {
   readonly onAddToCart = output();
   readonly onIncrementCount = output();
   readonly onDecrementCount = output();
+  readonly canIncrement = computed(() => {
+    if (!this.cartItem() || !this.product()) return false;
+    return this.cartItem()!.quantity + 1 <= this.product()!.available_quantity;
+  });
+  readonly canDecrement = computed(() => {
+    if (!this.cartItem()) return false;
+    return this.cartItem()!.quantity > 0;
+  });
 }
