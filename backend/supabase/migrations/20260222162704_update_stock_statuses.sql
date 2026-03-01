@@ -9,8 +9,10 @@ SELECT
     si.price,
     si.description,
     si.status,
+    c.name AS category_name,
     COALESCE(sm.remain, 0) AS available_quantity
 FROM stock_items si
+LEFT JOIN categories c ON c.id = si.category_id
 LEFT JOIN LATERAL (
     SELECT remain
     FROM stock_movements sm

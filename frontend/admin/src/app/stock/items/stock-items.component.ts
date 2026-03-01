@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, resource, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, resource, viewChild} from '@angular/core';
 import {StockItem, StockService} from '../stock.service';
 import {TableCardComponent} from '../../shared/ui/card/table-card.component';
 import {InlineCircleLoaderComponent} from '../../shared/ui/inline-circle-loader.component';
@@ -50,85 +50,91 @@ import {DecimalPipe} from '@angular/common';
         </cm-flex-row>
 
         @if (stock.hasValue()) {
-          <cm-table-card [size]="'medium'">
-            <table>
-              <colgroup>
-                <col span="1" style="width: 20%;">
-                <col span="1" style="width: 10%;">
-                <col span="1" style="width: 10%;">
-                <col span="1" style="width: 10%;">
-                <col span="1" style="width: 20%;">
-              </colgroup>
-              <thead>
-              <tr>
-                <th align="left">Name|Status</th>
-                <th align="left">Price</th>
-                <th align="left">Cost</th>
-                <th align="left">Profit</th>
-                <th align="right">Actions</th>
-              </tr>
-              </thead>
-              <tbody>
-                @for (item of stock.value(); track item) {
-                  <tr [class.cm-muted]="isArchived(item)">
-                    <td>
-                      <a class="cm-link"
-                         [routerLink]="['/stock', item.id]">
-                        {{ item.name }}
-                      </a>
-                      @if (isStopped(item)) {
-                        <cm-badge>{{ item.status }}</cm-badge>
-                      }
-                      @if (isArchived(item)) {
-                        <cm-badge appearance="secondary">{{ item.status }}</cm-badge>
-                      }
-                    </td>
-                    <td>
-                      {{ item.price }} €
-                    </td>
-                    <td>{{ item.cost_price }} €</td>
-                    <td>{{ (item.price - item.cost_price) | number:'1.0-2' }} €</td>
-                    <td>
-                      <cm-flex-column size="tiny" position="end">
-                        <cm-flex-row size="tiny">
-                          @if (canActivate(item)) {
-                            <cm-button appearance="success"
-                                       (onClick)="activate(item)"
-                                       size="tiny">Activate
-                            </cm-button>
-                          }
-                          @if (canDeactivate(item)) {
-                            <cm-button size="tiny"
-                                       (onClick)="deactivate(item)"
-                                       appearance="warning">
-                              Deactivate
-                            </cm-button>
-                          }
+          @for (group of groupedStock(); track group.categoryName) {
+            <cm-flex-column size="small">
+              <cm-title [level]="5">{{ group.categoryName }}</cm-title>
 
-                          @if (canAdjust(item)) {
-                            <cm-button size="tiny"
-                                       (onClick)="openMovingDialog(item)"
-                                       appearance="primary">
-                              Adjust
-                            </cm-button>
-                          }
-                        </cm-flex-row>
-
-                        @if (canArchive(item)) {
-                          <cm-button size="tiny"
-                                     [flat]="true"
-                                     (onClick)="archive(item)"
-                                     appearance="danger">
-                            Archive
-                          </cm-button>
-                        }
-                      </cm-flex-column>
-                    </td>
+              <cm-table-card [size]="'medium'">
+                <table>
+                  <colgroup>
+                    <col span="1" style="width: 20%;">
+                    <col span="1" style="width: 10%;">
+                    <col span="1" style="width: 10%;">
+                    <col span="1" style="width: 10%;">
+                    <col span="1" style="width: 20%;">
+                  </colgroup>
+                  <thead>
+                  <tr>
+                    <th align="left">Name|Status</th>
+                    <th align="left">Price</th>
+                    <th align="left">Cost</th>
+                    <th align="left">Profit</th>
+                    <th align="right">Actions</th>
                   </tr>
-                }
-              </tbody>
-            </table>
-          </cm-table-card>
+                  </thead>
+                  <tbody>
+                    @for (item of group.items; track item) {
+                      <tr [class.cm-muted]="isArchived(item)">
+                        <td>
+                          <a class="cm-link"
+                             [routerLink]="['/stock', item.id]">
+                            {{ item.name }}
+                          </a>
+                          @if (isStopped(item)) {
+                            <cm-badge>{{ item.status }}</cm-badge>
+                          }
+                          @if (isArchived(item)) {
+                            <cm-badge appearance="secondary">{{ item.status }}</cm-badge>
+                          }
+                        </td>
+                        <td>
+                          {{ item.price }} €
+                        </td>
+                        <td>{{ item.cost_price }} €</td>
+                        <td>{{ (item.price - item.cost_price) | number:'1.0-2' }} €</td>
+                        <td>
+                          <cm-flex-column size="tiny" position="end">
+                            <cm-flex-row size="tiny">
+                              @if (canActivate(item)) {
+                                <cm-button appearance="success"
+                                           (onClick)="activate(item)"
+                                           size="tiny">Activate
+                                </cm-button>
+                              }
+                              @if (canDeactivate(item)) {
+                                <cm-button size="tiny"
+                                           (onClick)="deactivate(item)"
+                                           appearance="warning">
+                                  Deactivate
+                                </cm-button>
+                              }
+
+                              @if (canAdjust(item)) {
+                                <cm-button size="tiny"
+                                           (onClick)="openMovingDialog(item)"
+                                           appearance="primary">
+                                  Adjust
+                                </cm-button>
+                              }
+                            </cm-flex-row>
+
+                            @if (canArchive(item)) {
+                              <cm-button size="tiny"
+                                         [flat]="true"
+                                         (onClick)="archive(item)"
+                                         appearance="danger">
+                                Archive
+                              </cm-button>
+                            }
+                          </cm-flex-column>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </cm-table-card>
+            </cm-flex-column>
+          }
         }
       </cm-flex-column>
     </cm-container>
@@ -169,6 +175,28 @@ export class StockItemsComponent {
         withArchived: this.withArchived,
       }));
     },
+  });
+
+  readonly groupedStock = computed(() => {
+    const items = this.stock.value() ?? [];
+    const map = new Map<string, { categoryName: string; items: StockItem[] }>();
+
+    for (const item of items) {
+      const key = item.category_id ?? '__none__';
+      const categoryName = item.category?.name ?? 'No category';
+      if (!map.has(key)) {
+        map.set(key, {categoryName, items: []});
+      }
+      map.get(key)!.items.push(item);
+    }
+
+    // Put "No category" group last
+    const groups = Array.from(map.values());
+    const noneIndex = groups.findIndex(g => g.categoryName === 'No category');
+    if (noneIndex > 0) {
+      groups.push(groups.splice(noneIndex, 1)[0]);
+    }
+    return groups;
   });
   private readonly _notificationsService = inject(NotificationsService);
 

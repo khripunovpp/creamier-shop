@@ -1,5 +1,6 @@
 import {inject} from '@angular/core';
 import {StockService} from '../../stock/stock.service';
+import {CategoriesService} from '../../categories/categories.service';
 import {firstValueFrom} from 'rxjs';
 
 export interface SelectResourcesConfig {
@@ -24,6 +25,15 @@ export const resources: Record<string, SelectResourcesConfig> = {
       asyncFactory: () => {
         const loader = inject(StockService);
         return firstValueFrom(loader.getProducts({withArchived: true}));
+      }
+    }
+  },
+  categories: {
+    name: 'categories',
+    loaderConfig: {
+      asyncFactory: () => {
+        const loader = inject(CategoriesService);
+        return firstValueFrom(loader.getCategories());
       }
     }
   },

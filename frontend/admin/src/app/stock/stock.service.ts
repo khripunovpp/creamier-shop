@@ -14,6 +14,8 @@ export interface StockItem {
   status: 'active' | 'stopped' | 'archived'
   created_at: string
   stopped_at: string | null
+  category_id: string | null
+  category?: { id: string; name: string } | null
 }
 
 @Injectable({
@@ -57,6 +59,7 @@ export class StockService {
         price: data.price,
         cost_price: data.cost_price,
         is_service: false,
+        category_id: data.category_id ?? null,
       },
       {withCredentials: true}
     );
@@ -89,6 +92,7 @@ export class StockService {
         description: data.description,
         price: data.price,
         cost_price: data.cost_price,
+        category_id: data.category_id ?? null,
       },
       {withCredentials: true}
     );

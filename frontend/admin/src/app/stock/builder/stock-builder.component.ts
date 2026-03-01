@@ -15,12 +15,15 @@ import {ContainerComponent} from '../../shared/ui/layout/container.component';
 import {InlineCircleLoaderComponent} from '../../shared/ui/inline-circle-loader.component';
 import {injectParams} from '../../shared/helpers/route.helpers';
 import {TextareaComponent} from '../../shared/ui/controls/textarea.component';
+import {MultiselectComponent} from '../../shared/ui/controls/multiselect.component';
+import {Category} from '../../categories/categories.service';
 
 export interface StockItemModel {
   name: string
   description: string
   price: number
   cost_price: number
+  category_id: string | null
 }
 
 @Component({
@@ -50,6 +53,14 @@ export interface StockItemModel {
             <cm-control label="Description">
               <cm-textarea placeholder=""
                         [formField]="stockItemForm.description"></cm-textarea>
+            </cm-control>
+
+            <cm-control label="Category">
+              <cm-multiselect [autoLoad]="true"
+                              compareField="id"
+                              [formField]="stockItemForm.category_id"
+                              resource="categories">
+              </cm-multiselect>
             </cm-control>
 
             <cm-flex-row size="small"
@@ -90,7 +101,8 @@ export interface StockItemModel {
     ButtonComponent,
     ContainerComponent,
     InlineCircleLoaderComponent,
-    TextareaComponent
+    TextareaComponent,
+    MultiselectComponent,
   ],
   styles: `
     :host {
@@ -107,7 +119,8 @@ export class StockBuilderComponent {
     name: '',
     description: '',
     price: 0,
-    cost_price: 0
+    cost_price: 0,
+    category_id: null,
   });
   readonly stockItemForm = form(
     this.stockItemModel,
@@ -125,7 +138,8 @@ export class StockBuilderComponent {
         name: value.name,
         description: value.description,
         price: value.price,
-        cost_price: value.cost_price
+        cost_price: value.cost_price,
+        category_id: value.category_id ?? null,
       });
     }
   })
@@ -167,11 +181,15 @@ export class StockBuilderComponent {
 
   private _getModelValue() {
     const model = this.stockItemModel();
+    const categoryId = model.category_id
+      ? (typeof model.category_id === 'string' ? model.category_id : (model.category_id as unknown as Category).id)
+      : null;
     return {
       name: model.name,
       description: model.description,
       price: +model.price,
-      cost_price: +model.cost_price
+      cost_price: +model.cost_price,
+      category_id: categoryId,
     }
   }
 }

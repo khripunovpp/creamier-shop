@@ -21,7 +21,7 @@ stockRoutes.get("/", async (c) => {
     : ["active", "stopped"];
 
   const {data, error} = await supabase.from("stock_items")
-    .select("*")
+    .select("*, category:categories(id, name)")
     .in("status", statuesToFetch)
     .order("status", {ascending: true})
     .order("created_at", {ascending: false});
@@ -87,6 +87,7 @@ stockRoutes.post(
         cost_price: requestData.cost_price,
         is_service: requestData.is_service,
         status: 'stopped',
+        category_id: requestData.category_id ?? null,
       })
       .select("*")
       .single();
@@ -121,6 +122,7 @@ stockRoutes.put(
         description: requestData.description,
         price: requestData.price,
         cost_price: requestData.cost_price,
+        category_id: requestData.category_id ?? null,
       })
       .eq('id', id);
 

@@ -7,6 +7,7 @@ export const stockScheme = z.object({
   cost_price: z.number().nonnegative(),
   is_service: z.boolean(),
   status: z.enum(['stopped', 'active']).default('stopped'),
+  category_id: z.uuid().nullable().optional(),
 });
 
 export type CreateStockItemScheme = z.infer<typeof stockScheme>;
