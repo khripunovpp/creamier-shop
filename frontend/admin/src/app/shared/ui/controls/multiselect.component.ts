@@ -33,7 +33,7 @@ export interface MultiselectItem {
                  (ngModelChange)="onChangeInput($event)"
                  [appendTo]="appendTo()"
                  [attr.data-u2e]="'multiselect.' + name()"
-                 [compareWith]="compareWith"
+                 [compareWith]="compareWithFn() ?? compareWith"
                  [items]="loadedList()"
                  [multiple]="multi()"
                  [ngModel]="value()"
@@ -63,7 +63,7 @@ export interface MultiselectItem {
     NgOptionTemplateDirective,
     NgLabelTemplateDirective,
     NgTemplateOutlet,
-    ],
+  ],
   styles: [
     `
       cm-multiselect {
@@ -157,6 +157,7 @@ export class MultiselectComponent
   loadedList = signal<unknown[]>([]);
   onSelected = output<unknown>();
   value = signal<unknown>(null)
+  compareWithFn = input<((a: MultiselectItem, b: MultiselectItem) => boolean)>();
   selectComponent = viewChild(NgSelectComponent);
   templates = contentChildren(ControlTemplateDirective);
   labelTemplate = computed(() => this.templates().find(t => t.type() === 'label'));
@@ -186,6 +187,8 @@ export class MultiselectComponent
   compareWith = (a: MultiselectItem, b: MultiselectItem) => {
     const valA = a as any;
     const valB = b as any;
+
+    console.log('compareWith', valA, valB);
 
     return valA?.[this.compareField()] === valB
       || valA === valB

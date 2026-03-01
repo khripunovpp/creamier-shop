@@ -16,6 +16,7 @@ import {NotificationsService} from '../../shared/services/notifications.service'
 import {RouterLink} from '@angular/router';
 import {SwitchComponent} from '../../shared/ui/controls/switch.component';
 import {StockMoveActionComponent} from '../moving/stock-move-action.component';
+import {DecimalPipe} from '@angular/common';
 
 @Component({
   selector: 'cm-stock-items',
@@ -56,7 +57,6 @@ import {StockMoveActionComponent} from '../moving/stock-move-action.component';
                 <col span="1" style="width: 10%;">
                 <col span="1" style="width: 10%;">
                 <col span="1" style="width: 10%;">
-                <col span="1" style="width: 10%;">
                 <col span="1" style="width: 20%;">
               </colgroup>
               <thead>
@@ -65,7 +65,6 @@ import {StockMoveActionComponent} from '../moving/stock-move-action.component';
                 <th align="left">Price</th>
                 <th align="left">Cost</th>
                 <th align="left">Profit</th>
-                <th align="left">Quantity</th>
                 <th align="right">Actions</th>
               </tr>
               </thead>
@@ -85,11 +84,10 @@ import {StockMoveActionComponent} from '../moving/stock-move-action.component';
                       }
                     </td>
                     <td>
-                      {{ item.price }}
+                      {{ item.price }} €
                     </td>
-                    <td>{{ item.cost_price }}</td>
-                    <td>{{ item.price - item.cost_price }}</td>
-                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.cost_price }} €</td>
+                    <td>{{ (item.price - item.cost_price) | number:'1.0-2' }} €</td>
                     <td>
                       <cm-flex-column size="tiny" position="end">
                         <cm-flex-row size="tiny">
@@ -152,6 +150,7 @@ import {StockMoveActionComponent} from '../moving/stock-move-action.component';
     RouterLink,
     SwitchComponent,
     StockMoveActionComponent,
+    DecimalPipe,
   ],
   styles: `
   `,

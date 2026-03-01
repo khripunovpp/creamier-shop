@@ -73,13 +73,22 @@ export class SelectResourcesService {
     force = false
   ) {
     const keys = resources || Array.from(this._registry.keys());
+    console.log({registry: this._registry, keys})
 
     return Promise.all(keys.map(async key => {
       const cfg = this.get<SelectResource<T>>(key);
-      // const cacheLifetime = 1000 * 60 * 5; // 5 minutes
-      // if (cfg.updatedAt && Date.now() - cfg.updatedAt < cacheLifetime && !force) {
-      //   return;
-      // }
+      const cacheLifetime = 1000 * 60 * 5; // 5 minutes
+      if (cfg.updatedAt && Date.now() - cfg.updatedAt < cacheLifetime && !force) {
+        return;
+      }
+      console.log({
+        dateNow: new Date(),
+        updatedAt: cfg.updatedAt ? new Date(cfg.updatedAt) : null,
+        diff: Date.now() - (cfg.updatedAt || 0),
+        cacheLifetime,
+        cfgUpdatedAt: cfg.updatedAt,
+        cfg
+      });
       let result: any;
       await runInInjectionContext(this._injector, async () => {
         result = await cfg.loader.load(cfg.name)

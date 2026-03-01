@@ -14,12 +14,12 @@ import {NotificationsService} from '../../shared/services/notifications.service'
 import {ContainerComponent} from '../../shared/ui/layout/container.component';
 import {InlineCircleLoaderComponent} from '../../shared/ui/inline-circle-loader.component';
 import {injectParams} from '../../shared/helpers/route.helpers';
+import {TextareaComponent} from '../../shared/ui/controls/textarea.component';
 
 export interface StockItemModel {
   name: string
   description: string
   price: number
-  quantity: number
   cost_price: number
 }
 
@@ -48,8 +48,8 @@ export interface StockItemModel {
                         [formField]="stockItemForm.name"></cm-input>
             </cm-control>
             <cm-control label="Description">
-              <cm-input placeholder=""
-                        [formField]="stockItemForm.description"></cm-input>
+              <cm-textarea placeholder=""
+                        [formField]="stockItemForm.description"></cm-textarea>
             </cm-control>
 
             <cm-flex-row size="small"
@@ -63,13 +63,6 @@ export interface StockItemModel {
                 <cm-number-input placeholder=""
                                  [formField]="stockItemForm.cost_price"></cm-number-input>
               </cm-control>
-
-              @if (!uuid()) {
-                <cm-control label="Quantity">
-                  <cm-number-input placeholder=""
-                                   [formField]="stockItemForm.quantity"></cm-number-input>
-                </cm-control>
-              }
             </cm-flex-row>
 
             <cm-flex-row size="small" [center]="true">
@@ -96,7 +89,8 @@ export interface StockItemModel {
     ControlComponent,
     ButtonComponent,
     ContainerComponent,
-    InlineCircleLoaderComponent
+    InlineCircleLoaderComponent,
+    TextareaComponent
   ],
   styles: `
     :host {
@@ -113,16 +107,13 @@ export class StockBuilderComponent {
     name: '',
     description: '',
     price: 0,
-    quantity: 0,
     cost_price: 0
   });
   readonly stockItemForm = form(
     this.stockItemModel,
     (path) => {
       required(path.name);
-      required(path.description);
       required(path.price);
-      required(path.quantity);
       required(path.cost_price);
     }
   );
@@ -134,7 +125,6 @@ export class StockBuilderComponent {
         name: value.name,
         description: value.description,
         price: value.price,
-        quantity: value.quantity,
         cost_price: value.cost_price
       });
     }
@@ -181,7 +171,6 @@ export class StockBuilderComponent {
       name: model.name,
       description: model.description,
       price: +model.price,
-      quantity: +model.quantity,
       cost_price: +model.cost_price
     }
   }

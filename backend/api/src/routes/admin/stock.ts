@@ -80,11 +80,19 @@ stockRoutes.post(
 
     const requestData = c.req.valid('json');
     const {data, error} = await supabase.from("stock_items")
-      .insert(requestData)
+      .insert({
+        name: requestData.name,
+        description: requestData.description,
+        price: requestData.price,
+        cost_price: requestData.cost_price,
+        is_service: requestData.is_service,
+        status: 'stopped',
+      })
       .select("*")
       .single();
 
     if (error) {
+      console.error("Failed to create product", error);
       return c.json({error: "Failed to create product"}, 500);
     }
 
@@ -108,7 +116,12 @@ stockRoutes.put(
     const requestData = c.req.valid('json');
 
     const {error} = await supabase.from("stock_items")
-      .update(requestData)
+      .update({
+        name: requestData.name,
+        description: requestData.description,
+        price: requestData.price,
+        cost_price: requestData.cost_price,
+      })
       .eq('id', id);
 
     if (error) {
@@ -131,11 +144,11 @@ stockRoutes.post('/:id/archive', async (c) => {
   const {error} = await supabase.from("stock_items")
     .update({
       status: 'archived',
-      quantity: 0,
     })
     .eq('id', id);
 
   if (error) {
+    console.error("Failed to archive product", error);
     return c.json({error: "Failed to archive product"}, 500);
   }
 
@@ -156,6 +169,7 @@ stockRoutes.post('/:id/activate', async (c) => {
     .eq('id', id);
 
   if (error) {
+    console.error("Failed to activate product", error);
     return c.json({error: "Failed to activate product"}, 500);
   }
 
@@ -176,6 +190,7 @@ stockRoutes.post('/:id/deactivate', async (c) => {
     .eq('id', id);
 
   if (error) {
+    console.error("Failed to deactivate product", error);
     return c.json({error: "Failed to deactivate product"}, 500);
   }
 
@@ -198,6 +213,7 @@ stockRoutes.post('/:id/move', async (c) => {
     .single();
 
   if (fetchError) {
+    console.error("Failed to fetch product", fetchError);
     return c.json({error: "Failed to fetch product"}, 500);
   }
   if (!currentItem) {
@@ -212,6 +228,7 @@ stockRoutes.post('/:id/move', async (c) => {
     .limit(1);
 
   if (movementRecordDataError) {
+    console.error("Failed to fetch stock movement data", movementRecordDataError);
     return c.json({error: "Failed to fetch stock movement data"}, 500);
   }
 
@@ -236,6 +253,7 @@ stockRoutes.post('/:id/move', async (c) => {
     });
 
   if (updateError) {
+    console.error("Failed to move stock item", updateError);
     return c.json({error: "Failed to move stock item"}, 500);
   }
 

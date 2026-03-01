@@ -20,6 +20,14 @@ import {RadioComponent} from '../../shared/ui/controls/radio.component';
 import {TextareaComponent} from '../../shared/ui/controls/textarea.component';
 import {MultiselectComponent} from '../../shared/ui/controls/multiselect.component';
 import {ControlTemplateDirective} from '../../shared/ui/controls/control-template.directive';
+import {NumberInputComponent} from '../../shared/ui/controls/number-input.component';
+import {WidthDirective} from '../../shared/directives/width.directive';
+
+type OrderFrontOnlyFields = {
+  items: {
+    sum: number
+  }[]
+}
 
 export type OrderModel = Omit<Order,
   'id'
@@ -31,10 +39,11 @@ export type OrderModel = Omit<Order,
   | 'items'
   | 'customer'
 > & {
-  items: {
+  items: Array<{
     stock_item_id: string
     quantity: number
-  }[]
+    price: number
+  } & OrderFrontOnlyFields['items'][number]>
   customer: {
     name: string
     email: string
@@ -43,6 +52,7 @@ export type OrderModel = Omit<Order,
     whatsapp: string | null
   }
 }
+
 
 @Component({
   selector: 'cm-order-builder',
@@ -67,145 +77,192 @@ export type OrderModel = Omit<Order,
           }
         </cm-flex-row>
 
-        <form (submit)="onSubmit($event)"
-              novalidate>
-          <cm-flex-column>
-            <cm-flex-column size="small">
-              <cm-title [level]="4">
-                Delivery info
-              </cm-title>
+        @if (stored.error()) {
+          <cm-control>
+            Failed to load order data. Please try again later.
+          </cm-control>
+        } @else {
+          <form (submit)="onSubmit($event)"
+                novalidate>
+            <cm-flex-column>
+              <cm-flex-column size="small">
+                <cm-title [level]="4">
+                  Delivery info
+                </cm-title>
 
-              <cm-control label="Delivery date">
+                <cm-control label="Comment">
+                  <cm-textarea [formField]="orderForm.comment"></cm-textarea>
+                </cm-control>
+
+                <cm-control label="Delivery date">
+                  <cm-flex-row size="small"
+                               cmExpand
+                               [equal]="true">
+                    <cm-date-picker [formField]="orderForm.delivery_date"></cm-date-picker>
+                    <cm-time-picker [formField]="orderForm.delivery_date"></cm-time-picker>
+                  </cm-flex-row>
+                </cm-control>
+
                 <cm-flex-row size="small"
                              cmExpand
                              [equal]="true">
-                  <cm-date-picker [formField]="orderForm.delivery_date"></cm-date-picker>
-                  <cm-time-picker [formField]="orderForm.delivery_date"></cm-time-picker>
+                  <cm-control label="Postal code">
+                    <cm-input [formField]="orderForm.delivery_info.postalCode"></cm-input>
+                  </cm-control>
+
+                  <cm-control label="Address line 1">
+                    <cm-input [formField]="orderForm.delivery_info.addressLine1"></cm-input>
+                  </cm-control>
+
+                  <cm-control label="Address line 2">
+                    <cm-input [formField]="orderForm.delivery_info.addressLine2"></cm-input>
+                  </cm-control>
                 </cm-flex-row>
-              </cm-control>
+              </cm-flex-column>
 
-              <cm-flex-row size="small"
-                           cmExpand
-                           [equal]="true">
-                <cm-control label="Postal code">
-                  <cm-input [formField]="orderForm.delivery_info.postalCode"></cm-input>
+              <cm-flex-column size="small">
+                <cm-title [level]="4">
+                  Order items
+                </cm-title>
+
+                <cm-flex-row size="small"
+                             [center]="true">
+                  <div cmExpand>
+                    Product
+                  </div>
+                  <div cmWidth="15%">
+                    Quantity
+                  </div>
+                  <div cmWidth="1%">x</div>
+                  <div cmWidth="15%">
+                    Price
+                  </div>
+                  <div cmWidth="1%">=</div>
+                  <div cmWidth="15%">
+                    Sum
+                  </div>
+                </cm-flex-row>
+
+                @for (item of orderForm.items; track item.stock_item_id; let i = $index) {
+                  <cm-flex-row size="small"
+                               [center]="true">
+                    <cm-multiselect [autoLoad]="true"
+                                    cmExpand
+                                    compareField="id"
+                                    [formField]="item.stock_item_id"
+                                    resource="products">
+                      <ng-template cmControlTpl
+                                   type="label"
+                                   let-item>
+                        @let stopped = item.status === 'stopped';
+                        @let archived = item.status === 'archived';
+
+                        @if (stopped) {
+                          <span style="color: orange">[Stopped]</span>
+                        }
+                        @if (archived) {
+                          <span style="color: gray">[Archived]</span>
+                        }
+                        {{ item.name }}
+                        - {{ item.price }}$ ({{ item.cost_price }}$ cost)
+                      </ng-template>
+
+                      <ng-template cmControlTpl
+                                   type="option"
+                                   let-item>
+                        @let stopped = item.status === 'stopped';
+                        @let archived = item.status === 'archived';
+
+                        @if (stopped) {
+                          <span style="color: orange">[Stopped]</span>
+                        }
+                        @if (archived) {
+                          <span style="color: gray">[Archived]</span>
+                        }
+                        {{ item.name }}
+                        - {{ item.price }}$ ({{ item.cost_price }}$ cost)
+                      </ng-template>
+                    </cm-multiselect>
+
+                    <cm-number-input cmWidth="15%"
+                                     (onInputChange)="onQuantityChange(i, $event)"
+                                     [formField]="item.quantity"></cm-number-input>
+                    <div cmWidth="1%">x</div>
+                    <span cmWidth="15%">
+                      {{ item().value().price }} €
+                    </span>
+                    <div cmWidth="1%">=</div>
+                    <span cmWidth="15%">
+                      {{ item().value().sum }} €
+                    </span>
+                  </cm-flex-row>
+                }
+              </cm-flex-column>
+
+              <cm-flex-column size="small">
+                <cm-title [level]="4">
+                  Payment info
+                </cm-title>
+
+                <cm-control label="Method">
+                  <cm-flex-row>
+                    <cm-radio size="small"
+                              [markOnHover]="true"
+                              payload="cash"
+                              [formField]="orderForm.payment_method">
+                      Cash
+                    </cm-radio>
+
+                    <cm-radio size="small"
+                              [markOnHover]="true"
+                              payload="bank_transfer"
+                              [formField]="orderForm.payment_method">
+                      Bank transfer
+                    </cm-radio>
+                  </cm-flex-row>
                 </cm-control>
 
-                <cm-control label="Address line 1">
-                  <cm-input [formField]="orderForm.delivery_info.addressLine1"></cm-input>
+                <cm-control label="Additional data">
+                  <cm-textarea [formField]="orderForm.payment_data"></cm-textarea>
+                </cm-control>
+              </cm-flex-column>
+
+              <cm-flex-column size="small">
+                <cm-title [level]="4">
+                  Customer info
+                </cm-title>
+                <cm-control label="Name">
+                  <cm-input [formField]="orderForm.customer.name"></cm-input>
                 </cm-control>
 
-                <cm-control label="Address line 2">
-                  <cm-input [formField]="orderForm.delivery_info.addressLine2"></cm-input>
+                <cm-control label="Email">
+                  <cm-input [formField]="orderForm.customer.email"></cm-input>
                 </cm-control>
+
+                <cm-control label="Phone number">
+                  <cm-input [formField]="orderForm.customer.phone_number"></cm-input>
+                </cm-control>
+
+                <cm-control label="Telegram">
+                  <cm-input [formField]="orderForm.customer.telegram"></cm-input>
+                </cm-control>
+
+                <cm-control label="WhatsApp">
+                  <cm-input [formField]="orderForm.customer.whatsapp"></cm-input>
+                </cm-control>
+              </cm-flex-column>
+
+              <cm-flex-row size="small" [center]="true">
+                <cm-button type="submit">
+                  Save
+                </cm-button>
+                @if (loading()) {
+                  <cm-inline-circle-loader></cm-inline-circle-loader>
+                }
               </cm-flex-row>
             </cm-flex-column>
-
-            <cm-flex-column size="small">
-              <cm-title [level]="4">
-                Payment info
-              </cm-title>
-
-              <cm-control label="Method">
-                <cm-flex-row>
-                  <cm-radio size="small"
-                            [markOnHover]="true"
-                            payload="cash"
-                            [formField]="orderForm.payment_method">
-                    Cash
-                  </cm-radio>
-
-                  <cm-radio size="small"
-                            [markOnHover]="true"
-                            payload="bank_transfer"
-                            [formField]="orderForm.payment_method">
-                    Bank transfer
-                  </cm-radio>
-                </cm-flex-row>
-              </cm-control>
-
-              <cm-control label="Additional data">
-                <cm-textarea [formField]="orderForm.payment_data"></cm-textarea>
-              </cm-control>
-            </cm-flex-column>
-
-            <cm-multiselect [autoLoad]="true"
-                            resource="products">
-              <ng-template cmControlTpl
-                           type="label"
-                           let-item>
-                @let stopped = item.status === 'stopped';
-                @let archived = item.status === 'archived';
-
-                @if (stopped) {
-                  <span style="color: orange">
-                    [Stopped]
-                  </span>
-                }
-                @if (archived) {
-                  <span style="color: gray">
-                    [Archived]
-                  </span>
-                }
-                {{ item.name }}
-                - {{ item.price }}$ ({{ item.cost_price }}$ cost)
-              </ng-template>
-              <ng-template cmControlTpl
-                           type="option"
-                           let-item>
-                @let stopped = item.status === 'stopped';
-                @let archived = item.status === 'archived';
-
-                @if (stopped) {
-                  <span style="color: orange">
-                    [Stopped]
-                  </span>
-                }
-                @if (archived) {
-                  <span style="color: gray">
-                    [Archived]
-                  </span>
-                }
-                {{ item.name }}
-                - {{ item.price }}$ ({{ item.cost_price }}$ cost)
-              </ng-template>
-            </cm-multiselect>
-
-            <cm-flex-column size="small">
-              <cm-title [level]="4">
-                Customer info
-              </cm-title>
-              <cm-control label="Name">
-                <cm-input [formField]="orderForm.customer.name"></cm-input>
-              </cm-control>
-
-              <cm-control label="Email">
-                <cm-input [formField]="orderForm.customer.email"></cm-input>
-              </cm-control>
-
-              <cm-control label="Phone number">
-                <cm-input [formField]="orderForm.customer.phone_number"></cm-input>
-              </cm-control>
-
-              <cm-control label="Telegram">
-                <cm-input [formField]="orderForm.customer.telegram"></cm-input>
-              </cm-control>
-
-              <cm-control label="WhatsApp">
-                <cm-input [formField]="orderForm.customer.whatsapp"></cm-input>
-              </cm-control>
-            </cm-flex-column>
-
-            <cm-flex-row size="small" [center]="true">
-              <cm-button type="submit">
-                Save
-              </cm-button>
-              @if (loading()) {
-                <cm-inline-circle-loader></cm-inline-circle-loader>
-              }
-            </cm-flex-row>
-          </cm-flex-column>
-        </form>
+          </form>
+        }
       </cm-flex-column>
     </cm-container>
   `,
@@ -226,7 +283,9 @@ export type OrderModel = Omit<Order,
     RadioComponent,
     TextareaComponent,
     MultiselectComponent,
-    ControlTemplateDirective
+    ControlTemplateDirective,
+    NumberInputComponent,
+    WidthDirective
   ],
   styles: `
     :host {
@@ -281,13 +340,25 @@ export class OrderBuilderComponent {
     }
   );
   readonly loading = signal(false);
+  private readonly _ordersService = inject(OrdersService);
+  readonly stored = resource({
+    params: () => ({uuid: this.uuid()}),
+    loader: ({params}) => {
+      if (!params.uuid) {
+        return Promise.resolve(null);
+      }
+      return firstValueFrom(this._ordersService.getOneOrder(params!.uuid));
+    },
+  });
   readonly storedEffect = effect(() => {
     const value = this.stored.value();
     if (value) {
       this.orderModel.set({
         items: value.items.map(item => ({
           stock_item_id: item.stock_item_id,
-          quantity: item.quantity
+          quantity: item.quantity,
+          price: item.price,
+          sum: item.price * item.quantity
         })),
         delivery_date: value.delivery_date,
         delivery_info: value.delivery_info,
@@ -300,16 +371,6 @@ export class OrderBuilderComponent {
         customer: value.customer,
       });
     }
-  })
-  private readonly _ordersService = inject(OrdersService);
-  readonly stored = resource({
-    params: () => ({uuid: this.uuid()}),
-    loader: ({params}) => {
-      if (!params.uuid) {
-        return Promise.resolve(null);
-      }
-      return firstValueFrom(this._ordersService.getOneOrder(params!.uuid));
-    },
   });
   private readonly _notificationsService = inject(NotificationsService);
 
@@ -338,10 +399,27 @@ export class OrderBuilderComponent {
       })
   }
 
+  onQuantityChange(
+    index: number,
+    quantity: string
+  ) {
+    this.orderModel.update(model => {
+      const item = model.items[index];
+      if (item) {
+        item.quantity = parseInt(quantity, 10) || item.quantity;
+        item.sum = item.price * item.quantity;
+      }
+      return model;
+    });
+  }
+
   private _getModelValue() {
     const model = this.orderModel();
     return {
-      items: model.items,
+      items: model.items.map(item => ({
+        stock_item_id: item.stock_item_id,
+        quantity: item.quantity,
+      })),
       delivery_date: model.delivery_date,
       delivery_info: model.delivery_info,
       comment: model.comment,
