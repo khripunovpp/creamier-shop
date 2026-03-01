@@ -154,7 +154,7 @@ export class InputComponent
   @ViewChild('input', {static: true}) input: ElementRef<HTMLInputElement> | undefined;
   value: string = '';
   focused = signal<boolean>(false);
-  placeholder = input('Enter text here');
+  placeholder = input('');
   autoFocus = input(false);
   inputType = input<string>('text');
   name = input<string>('');

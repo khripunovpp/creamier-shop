@@ -1,6 +1,7 @@
 import {Hono} from "hono";
 import {cors} from "hono/cors";
 import stockRoutes from "./routes/admin/stock";
+import categoriesRoutes from "./routes/admin/categories";
 import loginRoutes from "./routes/auth/login";
 import productsPublicRoutes from "./routes/public/products";
 import {SupabaseClient, User} from "@supabase/supabase-js";
@@ -29,7 +30,7 @@ const app = new Hono<{
 
 app.use("/api/admin/*", cors({
   origin: "http://localhost:4200", // твой фронт
-  allowMethods: ["GET", "POST", "OPTIONS", "PUT"],
+  allowMethods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
   allowHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
@@ -56,6 +57,7 @@ app.get("/", (c) => c.text("Creamier API running 🧁"));
 // Подключаем роуты
 app.route("/api/public", productsPublicRoutes);
 app.route("/api/admin/products", stockRoutes);
+app.route("/api/admin/categories", categoriesRoutes);
 app.route("/api/admin/orders", ordersRoutes);
 app.route("/api/auth", loginRoutes);
 

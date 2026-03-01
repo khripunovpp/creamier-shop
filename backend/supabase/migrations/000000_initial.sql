@@ -171,10 +171,17 @@ CREATE TABLE IF NOT EXISTS "public"."stock_items" (
     "status" "public"."stock_status" DEFAULT 'active'::"public"."stock_status",
     "created_at" timestamp with time zone DEFAULT "now"(),
     "stopped_at" timestamp with time zone
+    "category_id" uuid REFERENCES categories(id)
 );
 
 
 ALTER TABLE "public"."stock_items" OWNER TO "postgres";
+
+CREATE TABLE categories (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
 
 
 CREATE OR REPLACE VIEW "public"."public_products" WITH ("security_invoker"='false') AS
@@ -315,6 +322,8 @@ CREATE POLICY "admin full access" ON "public"."stock_items" TO "authenticated" U
 CREATE POLICY "admin full access" ON "public"."stock_movements" TO "authenticated" USING (true) WITH CHECK (true);
 
 
+CREATE POLICY "admin full access" ON "public"."categories" TO "authenticated" USING (true) WITH CHECK (true);
+
 
 ALTER TABLE "public"."order_history" ENABLE ROW LEVEL SECURITY;
 
@@ -333,6 +342,8 @@ ALTER TABLE "public"."stock_items" ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE "public"."stock_movements" ENABLE ROW LEVEL SECURITY;
 
+
+ALTER TABLE "public"."categories" ENABLE ROW LEVEL SECURITY;
 
 
 
@@ -560,6 +571,9 @@ GRANT ALL ON TABLE "public"."stock_movements" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."categories" TO "anon";
+GRANT ALL ON TABLE "public"."categories" TO "authenticated";
+GRANT ALL ON TABLE "public"."categories" TO "service_role";
 
 
 

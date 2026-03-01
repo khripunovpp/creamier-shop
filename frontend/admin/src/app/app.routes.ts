@@ -64,6 +64,21 @@ export const routes: Routes = [
         path: 'orders/:uuid',
         canActivate: [authGuard],
         loadComponent: () => import('./orders/builder/order-builder.component').then(m => m.OrderBuilderComponent),
+      },
+      {
+        path: 'categories',
+        canActivate: [authGuard],
+        loadComponent: () => import('./categories/list/categories.component').then(m => m.CategoriesComponent),
+      },
+      {
+        path: 'categories/create',
+        canActivate: [authGuard],
+        loadComponent: () => import('./categories/builder/category-builder.component').then(m => m.CategoryBuilderComponent),
+      },
+      {
+        path: 'categories/:uuid',
+        canActivate: [authGuard],
+        loadComponent: () => import('./categories/builder/category-builder.component').then(m => m.CategoryBuilderComponent),
       }
     ]
   },

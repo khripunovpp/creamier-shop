@@ -54,6 +54,23 @@ import {ContainerComponent} from '../shared/ui/layout/container.component';
             </cm-card>
           </a>
 
+          <a routerLink="/categories"
+             cmWidth="25%"
+             class="dashboard-menu__item">
+            <cm-card>
+              <cm-flex-column size="small">
+                <div class="dashboard-menu__item-icon">
+                  <img src="/icons/category-icon.svg"
+                       alt="categories icon">
+                </div>
+
+                <div class="dashboard-menu__item-caption">
+                  Categories
+                </div>
+              </cm-flex-column>
+            </cm-card>
+          </a>
+
         </cm-flex-row>
       </section>
     </cm-container>
