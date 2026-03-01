@@ -8,6 +8,7 @@ export const stockScheme = z.object({
   is_service: z.boolean(),
   status: z.enum(['stopped', 'active']).default('stopped'),
   category_id: z.uuid().nullable().optional(),
+  badge: z.enum(['sale', 'hot']).nullable().optional(),
 });
 
 export type CreateStockItemScheme = z.infer<typeof stockScheme>;

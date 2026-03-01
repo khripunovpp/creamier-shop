@@ -9,6 +9,7 @@ SELECT
     si.price,
     si.description,
     si.status,
+    si.badge,
     c.name AS category_name,
     COALESCE(sm.remain, 0) AS available_quantity
 FROM stock_items si
@@ -20,4 +21,5 @@ LEFT JOIN LATERAL (
     ORDER BY sm.created_at DESC
     LIMIT 1
 ) sm ON true
-WHERE si.status = 'active';
+WHERE si.status = 'active'
+AND si.is_service = false;

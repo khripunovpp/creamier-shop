@@ -1,13 +1,21 @@
 import {ChangeDetectionStrategy, Component, computed, input, output} from '@angular/core';
+import {UpperCasePipe} from '@angular/common';
 import {Product} from '../../types/product.type';
 import {CartItem} from '../../types/cart.type';
 
 @Component({
   selector: 'cmh-product-item',
+  standalone: true,
+  imports: [UpperCasePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (product(); as product) {
       <div class="product-item">
+        @if (product.badge) {
+          <div class="product-item__badge product-item__badge--{{ product.badge }}">
+            {{ product.badge | uppercase }}
+          </div>
+        }
         <div class="product-item__name"> {{ product.name }}</div>
         <div class="product-item__price"> {{ product.price }}$</div>
         <div class="product-item__actions">
@@ -45,9 +53,30 @@ import {CartItem} from '../../types/cart.type';
       border: 1px solid #ccc;
       padding: 20px;
       text-align: center;
+      position: relative;
     }
 
     .product-item {
+      &__badge {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        padding: 2px 8px;
+        border-radius: 100px;
+        font-size: 0.7em;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+
+        &--sale {
+          background-color: #e53935;
+          color: #fff;
+        }
+
+        &--hot {
+          background-color: #ff6f00;
+          color: #fff;
+        }
+      }
       &__name {
         font-size: 18px;
         font-weight: bold;

@@ -88,6 +88,7 @@ stockRoutes.post(
         is_service: requestData.is_service,
         status: 'stopped',
         category_id: requestData.category_id ?? null,
+        badge: requestData.badge || null,
       })
       .select("*")
       .single();
@@ -123,10 +124,12 @@ stockRoutes.put(
         price: requestData.price,
         cost_price: requestData.cost_price,
         category_id: requestData.category_id ?? null,
+        badge: requestData.badge || null,
       })
       .eq('id', id);
 
     if (error) {
+      console.error("Failed to update product", error);
       return c.json({error: "Failed to update product"}, 500);
     }
 

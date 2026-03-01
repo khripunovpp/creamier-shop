@@ -80,6 +80,9 @@ import {DecimalPipe} from '@angular/common';
                              [routerLink]="['/stock', item.id]">
                             {{ item.name }}
                           </a>
+                          @if (item.badge) {
+                            <cm-badge appearance="success">{{ item.badge }}</cm-badge>
+                          }
                           @if (isStopped(item)) {
                             <cm-badge>{{ item.status }}</cm-badge>
                           }

@@ -8,7 +8,7 @@ import {InputComponent} from '../../shared/ui/controls/input.component';
 import {NumberInputComponent} from '../../shared/ui/controls/number-input.component';
 import {ControlComponent} from '../../shared/ui/controls/control-item/control.component';
 import {ButtonComponent} from '../../shared/ui/controls/button/button.component';
-import {StockItem, StockService} from '../stock.service';
+import {StockService} from '../stock.service';
 import {finalize, firstValueFrom} from 'rxjs';
 import {NotificationsService} from '../../shared/services/notifications.service';
 import {ContainerComponent} from '../../shared/ui/layout/container.component';
@@ -16,7 +16,7 @@ import {InlineCircleLoaderComponent} from '../../shared/ui/inline-circle-loader.
 import {injectParams} from '../../shared/helpers/route.helpers';
 import {TextareaComponent} from '../../shared/ui/controls/textarea.component';
 import {MultiselectComponent} from '../../shared/ui/controls/multiselect.component';
-import {Category} from '../../categories/categories.service';
+import {RadioComponent} from '../../shared/ui/controls/radio.component';
 
 export interface StockItemModel {
   name: string
@@ -24,6 +24,7 @@ export interface StockItemModel {
   price: number
   cost_price: number
   category_id: string | null
+  badge: 'sale' | 'hot' | ''
 }
 
 @Component({
@@ -50,9 +51,28 @@ export interface StockItemModel {
               <cm-input placeholder=""
                         [formField]="stockItemForm.name"></cm-input>
             </cm-control>
+
+            <cm-control label="Badge">
+              <cm-flex-row size="small">
+                <cm-radio size="small"
+                          [markOnHover]="true"
+                          payload=""
+                          [formField]="stockItemForm.badge">
+
+                  None
+                </cm-radio>
+                <cm-radio size="small"
+                          payload="hot"
+                          [markOnHover]="true"
+                          [formField]="stockItemForm.badge">
+                  Hot
+                </cm-radio>
+              </cm-flex-row>
+            </cm-control>
+
             <cm-control label="Description">
               <cm-textarea placeholder=""
-                        [formField]="stockItemForm.description"></cm-textarea>
+                           [formField]="stockItemForm.description"></cm-textarea>
             </cm-control>
 
             <cm-control label="Category">
@@ -103,6 +123,7 @@ export interface StockItemModel {
     InlineCircleLoaderComponent,
     TextareaComponent,
     MultiselectComponent,
+    RadioComponent,
   ],
   styles: `
     :host {
@@ -121,6 +142,7 @@ export class StockBuilderComponent {
     price: 0,
     cost_price: 0,
     category_id: null,
+    badge: '',
   });
   readonly stockItemForm = form(
     this.stockItemModel,
@@ -131,18 +153,6 @@ export class StockBuilderComponent {
     }
   );
   readonly loading = signal(false);
-  readonly storedEffect = effect(() => {
-    const value = this.stored.value();
-    if (value) {
-      this.stockItemModel.set({
-        name: value.name,
-        description: value.description,
-        price: value.price,
-        cost_price: value.cost_price,
-        category_id: value.category_id ?? null,
-      });
-    }
-  })
   private readonly _stockService = inject(StockService);
   readonly stored = resource({
     params: () => ({uuid: this.uuid()}),
@@ -153,6 +163,19 @@ export class StockBuilderComponent {
       return firstValueFrom(this._stockService.getOneProduct(params!.uuid));
     },
   });
+  readonly storedEffect = effect(() => {
+    const value = this.stored.value();
+    if (value) {
+      this.stockItemModel.set({
+        name: value.name,
+        description: value.description,
+        price: value.price,
+        cost_price: value.cost_price,
+        category_id: value.category_id ?? null,
+        badge: value.badge || '',
+      });
+    }
+  })
   private readonly _notificationsService = inject(NotificationsService);
 
   onSubmit(event: Event) {
@@ -181,15 +204,14 @@ export class StockBuilderComponent {
 
   private _getModelValue() {
     const model = this.stockItemModel();
-    const categoryId = model.category_id
-      ? (typeof model.category_id === 'string' ? model.category_id : (model.category_id as unknown as Category).id)
-      : null;
+
     return {
       name: model.name,
       description: model.description,
       price: +model.price,
       cost_price: +model.cost_price,
-      category_id: categoryId,
+      category_id: model.category_id,
+      badge: model.badge || null,
     }
   }
 }

@@ -16,6 +16,7 @@ export interface StockItem {
   stopped_at: string | null
   category_id: string | null
   category?: { id: string; name: string } | null
+  badge: 'sale' | 'hot' | null
 }
 
 @Injectable({
@@ -60,6 +61,7 @@ export class StockService {
         cost_price: data.cost_price,
         is_service: false,
         category_id: data.category_id ?? null,
+        badge: data.badge ?? null,
       },
       {withCredentials: true}
     );
@@ -93,6 +95,7 @@ export class StockService {
         price: data.price,
         cost_price: data.cost_price,
         category_id: data.category_id ?? null,
+        badge: data.badge ?? null,
       },
       {withCredentials: true}
     );
