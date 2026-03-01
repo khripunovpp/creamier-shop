@@ -18,6 +18,8 @@ import {ExpandDirective} from '../../shared/directives/expand.directive';
 import {InputComponent} from '../../shared/ui/controls/input.component';
 import {RadioComponent} from '../../shared/ui/controls/radio.component';
 import {TextareaComponent} from '../../shared/ui/controls/textarea.component';
+import {MultiselectComponent} from '../../shared/ui/controls/multiselect.component';
+import {ControlTemplateDirective} from '../../shared/ui/controls/control-template.directive';
 
 export type OrderModel = Omit<Order,
   'id'
@@ -127,6 +129,48 @@ export type OrderModel = Omit<Order,
               </cm-control>
             </cm-flex-column>
 
+            <cm-multiselect [autoLoad]="true"
+                            resource="products">
+              <ng-template cmControlTpl
+                           type="label"
+                           let-item>
+                @let stopped = item.status === 'stopped';
+                @let archived = item.status === 'archived';
+
+                @if (stopped) {
+                  <span style="color: orange">
+                    [Stopped]
+                  </span>
+                }
+                @if (archived) {
+                  <span style="color: gray">
+                    [Archived]
+                  </span>
+                }
+                {{ item.name }}
+                - {{ item.price }}$ ({{ item.cost_price }}$ cost)
+              </ng-template>
+              <ng-template cmControlTpl
+                           type="option"
+                           let-item>
+                @let stopped = item.status === 'stopped';
+                @let archived = item.status === 'archived';
+
+                @if (stopped) {
+                  <span style="color: orange">
+                    [Stopped]
+                  </span>
+                }
+                @if (archived) {
+                  <span style="color: gray">
+                    [Archived]
+                  </span>
+                }
+                {{ item.name }}
+                - {{ item.price }}$ ({{ item.cost_price }}$ cost)
+              </ng-template>
+            </cm-multiselect>
+
             <cm-flex-column size="small">
               <cm-title [level]="4">
                 Customer info
@@ -180,7 +224,9 @@ export type OrderModel = Omit<Order,
     ExpandDirective,
     InputComponent,
     RadioComponent,
-    TextareaComponent
+    TextareaComponent,
+    MultiselectComponent,
+    ControlTemplateDirective
   ],
   styles: `
     :host {

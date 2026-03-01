@@ -23,6 +23,7 @@ stockRoutes.get("/", async (c) => {
   const {data, error} = await supabase.from("stock_items")
     .select("*")
     .in("status", statuesToFetch)
+    .order("status", {ascending: true})
     .order("created_at", {ascending: false});
 
   const stockItemsWithMovements = await Promise.all(data?.map(async (item) => {

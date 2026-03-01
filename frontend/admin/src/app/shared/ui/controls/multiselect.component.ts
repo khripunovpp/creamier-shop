@@ -20,7 +20,6 @@ import {NgTemplateOutlet} from '@angular/common';
 import {SelectResourcesService} from '../../services/select-resources.service';
 import {ControlTemplateDirective} from './control-template.directive';
 
-
 export interface MultiselectItem {
   value: unknown
 }
