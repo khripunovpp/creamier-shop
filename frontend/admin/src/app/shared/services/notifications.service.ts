@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HotToastService, ToastOptions} from '@ngxpert/hot-toast';
 import {FormArray, FormGroup} from '@angular/forms';
+import {FieldTree} from '@angular/forms/signals';
 
 @Injectable({
   providedIn: 'root'
@@ -107,6 +108,15 @@ export class NotificationsService {
     }
 
     return errors;
+  }
+
+  parseSignalFormErrors(
+    form: FieldTree<unknown>
+  ) {
+    const errors = form().errorSummary();
+    return errors.map(error => {
+      return `${error.message}`;
+    });
   }
 
   private _tryHapticFeedback(

@@ -14,6 +14,7 @@ import {DatePipe} from '@angular/common';
 import {ButtonComponent} from '../../shared/ui/controls/button/button.component';
 import {canMarkDelivered, canMarkPaidDelivered, canMarkPaidUndelivered} from '../orders.helpers';
 import {BadgeComponent} from '../../shared/ui/badge.component';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'cm-orders-overview',
@@ -37,14 +38,16 @@ import {BadgeComponent} from '../../shared/ui/badge.component';
           <cm-table-card [size]="'medium'">
             <table>
               <colgroup>
-                <col span="1" style="width: 40%;">
+                <col span="1" style="width: 35%;">
+                <col span="1" style="width: 15%;">
                 <col span="1" style="width: 20%;">
                 <col span="1" style="width: 10%;">
-                <col span="1" style="width: 30%;">
+                <col span="1" style="width: 20%;">
               </colgroup>
               <thead>
               <tr>
                 <th align="left">Delivery info</th>
+                <th align="left">Delivery date</th>
                 <th align="left">Total</th>
                 <th align="left">Status</th>
                 <th align="right">Actions</th>
@@ -57,10 +60,19 @@ import {BadgeComponent} from '../../shared/ui/badge.component';
                       @if (isNewOrder(item)) {
                         <cm-badge appearance="success">New</cm-badge><br>
                       }
-                      {{ item.delivery_info.postalCode }}<br>
-                      {{ item.delivery_info.addressLine1 }}<br>
-                      {{ item.delivery_info.addressLine2 }}<br>
-                      {{ item.delivery_date | date:'HH:mm, dd.MM.yyyy' }}
+                      <a class="cm-link"
+                         [routerLink]="['/orders', item.id]">
+                        {{ item.delivery_info.postalCode }}<br>
+                        {{ item.delivery_info.addressLine1 }}<br>
+                        {{ item.delivery_info.addressLine2 }}
+                      </a>
+                    </td>
+                    <td>
+                      @if (item.delivery_date) {
+                        {{ item.delivery_date | date:'HH:mm, dd.MM.yyyy' }}
+                      } @else {
+                        -
+                      }
                     </td>
                     <td>
                       <div>{{ item.total_amount }} €</div>
@@ -115,6 +127,7 @@ import {BadgeComponent} from '../../shared/ui/badge.component';
     DatePipe,
     ButtonComponent,
     BadgeComponent,
+    RouterLink,
 
   ],
   styles: `

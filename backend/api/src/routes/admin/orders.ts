@@ -35,11 +35,17 @@ ordersRoutes.get("/:id", async (c) => {
   const {id} = c.req.param();
 
   const {data, error} = await supabase.from("orders")
-    .select("*")
+    .select(`
+      *,
+      items:order_items (stock_item_id, quantity, price, cost_price, is_service),
+      customer:customers (name, email,phone_number,telegram,whatsapp)
+    `)
     .eq("id", id)
     .single();
 
+
   if (error) {
+    console.error("Failed to fetch order", error);
     return c.json({error: "Failed to fetch order"}, 500);
   }
 
@@ -67,6 +73,7 @@ ordersRoutes.post('/:id/mark_paid', async (c) => {
     .single();
 
   if (error) {
+    console.error("Failed to read order", error);
     return c.json({error: "Failed to read order"}, 500);
   }
 
@@ -95,6 +102,7 @@ ordersRoutes.post('/:id/mark_paid', async (c) => {
         .single();
 
       if (error) {
+        console.error("Failed to update order status", error);
         return c.json({error: "Failed to update order status"}, 500);
       }
 
@@ -118,6 +126,7 @@ ordersRoutes.post('/:id/mark_paid', async (c) => {
         .single();
 
       if (error) {
+        console.error("Failed to update order status", error);
         return c.json({error: "Failed to update order status"}, 500);
       }
 
@@ -143,6 +152,7 @@ ordersRoutes.post('/:id/mark_delivered', async (c) => {
     .single();
 
   if (error) {
+    console.error("Failed to read order", error);
     return c.json({error: "Failed to read order"}, 500);
   }
 
@@ -159,6 +169,7 @@ ordersRoutes.post('/:id/mark_delivered', async (c) => {
       .single();
 
     if (error) {
+      console.error("Failed to update order status", error);
       return c.json({error: "Failed to update order status"}, 500);
     }
 

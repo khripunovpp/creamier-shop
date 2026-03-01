@@ -21,7 +21,59 @@ export interface Order {
   }
   paid_at: string | null
   payment_method: 'cash' | 'bank_transfer'
+  items: {
+    stock_item_id: string
+    quantity: number
+    price: number
+    cost_price: number
+    is_service: boolean
+  }[]
+  customer: {
+    name: string
+    email: string
+    phone_number: string | null
+    telegram: string | null
+    whatsapp: string | null
+  }
 }
+
+type CreateOrderDto = Omit<
+  Order,
+  'id'
+  | 'created_at'
+  | 'completed_at'
+  | 'paid_at'
+  | 'status'
+  | 'profit_amount'
+  | 'user_id'
+  | 'total_amount'
+  | 'items'
+  | 'customer'
+> & {
+  items: {
+    stock_item_id: string
+    quantity: number
+  }[]
+};
+
+type UpdateOrderDto = Omit<
+  Order,
+  'id'
+  | 'created_at'
+  | 'completed_at'
+  | 'paid_at'
+  | 'status'
+  | 'profit_amount'
+  | 'user_id'
+  | 'total_amount'
+  | 'items'
+  | 'customer'
+> & {
+  items: {
+    stock_item_id: string
+    quantity: number
+  }[]
+};
 
 @Injectable({
   providedIn: 'root'
@@ -71,6 +123,27 @@ export class OrdersService {
     return this._httpClient.post(
       environment.worker_url + `/api/admin/orders/${id}/mark_delivered`,
       null,
+      {withCredentials: true,},
+    );
+  }
+
+  createOrder(
+    order: CreateOrderDto,
+  ) {
+    return this._httpClient.post<Order>(
+      environment.worker_url + `/api/admin/orders`,
+      order,
+      {withCredentials: true,},
+    );
+  }
+
+  updateOrder(
+    id: string,
+    order: UpdateOrderDto,
+  ) {
+    return this._httpClient.put<Order>(
+      environment.worker_url + `/api/admin/orders/${id}`,
+      order,
       {withCredentials: true,},
     );
   }
