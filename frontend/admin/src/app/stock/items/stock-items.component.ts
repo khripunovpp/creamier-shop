@@ -234,7 +234,8 @@ export class StockItemsComponent {
   canAdjust(
     item: StockItem
   ) {
-    return item.status !== 'archived';
+    return false
+    // return item.status !== 'archived';
   }
 
   isStopped(
