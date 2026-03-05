@@ -9,4 +9,5 @@ export interface Product
   description: string
   available_quantity: number
   badge: 'sale' | 'hot' | null
+  category_name: string
 }

@@ -4,10 +4,11 @@ import {AsyncPipe} from '@angular/common';
 import {ProductItemComponent} from '../products/product-item.component';
 import {CartService} from '../../service/services/cart.service';
 import {Product} from '../../types/product.type';
-import {combineLatestWith, map, Observable} from 'rxjs';
+import {combineLatestWith, map, Observable, shareReplay} from 'rxjs';
 import {CartItem} from '../../types/cart.type';
 import {ContainerComponent} from '../layout/container.component';
-import {tap} from 'rxjs/operators';
+import {TabsComponent} from '../../shared/ui/tabs/tabs.component';
+import {TabDirective} from '../../shared/ui/tabs/tab.directive';
 
 @Component({
   selector: 'cmh-products',
@@ -15,16 +16,28 @@ import {tap} from 'rxjs/operators';
     @defer {
       <section class="products">
         <cmh-container>
-          <div class="products__list">
-            @for (item of (items$ | async); track item.product.id + '-' + (item.cartItem ? item.cartItem.quantity : '0')) {
-              <cmh-product-item (onAddToCart)="onAddToCartHandler(item.product)"
-                                (onIncrementCount)="onIncrementCountHandler(item.product)"
-                                (onDecrementCount)="onDecrementCountHandler(item.product)"
-                                [cartItem]="item.cartItem"
-                                class="products__item"
-                                [product]="item.product"></cmh-product-item>
+          <cmh-tabs>
+            @for (cat of (categories$ | async); track cat) {
+              <ng-template [alias]="cat"
+                           [label]="cat"
+                           cmhTab>
+                <div class="products__list">
+                  @for (item of (items$ | async); track item.product.id + '-' + (item.cartItem ? item.cartItem.quantity : '0')) {
+                    @if (item.product.category_name === cat || cat === 'all') {
+                      <cmh-product-item (onAddToCart)="onAddToCartHandler(item.product)"
+                                        (onIncrementCount)="onIncrementCountHandler(item.product)"
+                                        (onDecrementCount)="onDecrementCountHandler(item.product)"
+                                        [cartItem]="item.cartItem"
+                                        class="products__item"
+                                        [product]="item.product"></cmh-product-item>
+                    }
+                  }
+                </div>
+              </ng-template>
             }
-          </div>
+          </cmh-tabs>
+
+
         </cmh-container>
       </section>
     }
@@ -47,7 +60,9 @@ import {tap} from 'rxjs/operators';
   imports: [
     AsyncPipe,
     ProductItemComponent,
-    ContainerComponent
+    ContainerComponent,
+    TabsComponent,
+    TabDirective
   ]
 })
 export class ProductsComponent {
@@ -55,17 +70,18 @@ export class ProductsComponent {
   }
 
   private readonly _productsService = inject(ProductsService);
+  readonly products$ = this._productsService.getProducts$.pipe(
+    shareReplay(),
+  )
   private readonly _cartService = inject(CartService);
-  readonly products$ = this._productsService.getProducts$;
   readonly cart$ = this._cartService.cart$;
-
-  readonly trackByProductId = (index: number, item: {
-    product: Product
-    cartItem: CartItem<Product> | undefined
-  }) => {
-    return item.product.id + '-' + (item.cartItem ? item.cartItem.quantity : '0');
-  };
-
+  readonly categories$ = this.products$.pipe(
+    map(products => products.reduce((acc, prod) => {
+      acc.add(prod.category_name);
+      return acc;
+    }, new Set<string>())),
+    map((categoriesSet => ['all'].concat(Array.from(categoriesSet)))),
+  );
   readonly items$: Observable<{
     product: Product
     cartItem: CartItem<Product> | undefined
@@ -80,8 +96,14 @@ export class ProductsComponent {
         };
       });
     }),
-    tap(items => console.log('Combined products with cart items:', items)),
   );
+
+  readonly trackByProductId = (index: number, item: {
+    product: Product
+    cartItem: CartItem<Product> | undefined
+  }) => {
+    return item.product.id + '-' + (item.cartItem ? item.cartItem.quantity : '0');
+  };
 
   onAddToCartHandler(product: Product) {
     this._cartService.addToCart({

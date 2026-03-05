@@ -39,7 +39,6 @@ declare
   v_item jsonb;
   v_now timestamptz := now();
   v_last_order timestamptz;
-  v_stock integer;
   v_price numeric;
   v_cost_price numeric;
   v_total_amount numeric := 0;
@@ -134,23 +133,6 @@ begin
       raise exception 'Product not found: %', (v_item->>'id');
     end if;
 
-    -- Получаем текущий остаток из последней записи stock_movements
-    select remain
-    into v_stock
-    from stock_movements
-    where stock_item_id = (v_item->>'id')::uuid
-    order by created_at desc, id desc
-    limit 1;
-
-    -- Если движений ещё не было — остаток считаем 0
-    if v_stock is null then
-      v_stock := 0;
-    end if;
-
-    if v_stock < v_qty then
-      raise exception 'Not enough stock for product %', (v_item->>'id');
-    end if;
-
     insert into order_items (
       order_id,
       stock_item_id,
@@ -164,21 +146,6 @@ begin
       v_qty,
       v_price,
       v_cost_price
-    );
-
-    insert into stock_movements (
-      stock_item_id,
-      quantity,
-      operation,
-      created_at,
-      remain
-    )
-    values (
-      (v_item->>'id')::uuid,
-      v_qty,
-      'make_order',
-      v_now,
-      v_stock - v_qty
     );
 
     v_total_amount  := v_total_amount  + v_price      * v_qty;
