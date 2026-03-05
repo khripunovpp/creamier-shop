@@ -50,7 +50,7 @@ export class StockService {
   }
 
   createProduct(
-    data: Omit<StockItem, 'id' | 'created_at' | 'stopped_at' | 'status' | 'is_service' | 'quantity'>,
+    data: Omit<StockItem, 'id' | 'created_at' | 'stopped_at' | 'status' | 'quantity'>,
   ) {
     return this._httpClient.post<StockItem>(
       environment.worker_url + '/api/admin/products',
@@ -59,7 +59,7 @@ export class StockService {
         description: data.description,
         price: data.price,
         cost_price: data.cost_price,
-        is_service: false,
+        is_service: data.is_service ?? false,
         category_id: data.category_id ?? null,
         badge: data.badge ?? null,
       },

@@ -1,4 +1,4 @@
-import {Component, effect, inject, resource, signal} from '@angular/core';
+import {Component, computed, effect, inject, resource, signal} from '@angular/core';
 import {form, FormField, required} from '@angular/forms/signals';
 import {FlexColumnComponent} from '../../shared/ui/layout/flex-column.component';
 import {FlexRowComponent} from '../../shared/ui/layout/flex-row.component';
@@ -23,8 +23,9 @@ export interface StockItemModel {
   description: string
   price: number
   cost_price: number
-  category_id: string | null
+  category_id: { id: string } | null
   badge: 'sale' | 'hot' | ''
+  type: 'products' | 'service'
 }
 
 @Component({
@@ -52,36 +53,57 @@ export interface StockItemModel {
                         [formField]="stockItemForm.name"></cm-input>
             </cm-control>
 
-            <cm-control label="Badge">
+            <cm-control label="Type">
               <cm-flex-row size="small">
                 <cm-radio size="small"
                           [markOnHover]="true"
-                          payload=""
-                          [formField]="stockItemForm.badge">
-
-                  None
+                          payload="products"
+                          [formField]="stockItemForm.type">
+                  Product
                 </cm-radio>
                 <cm-radio size="small"
-                          payload="hot"
                           [markOnHover]="true"
-                          [formField]="stockItemForm.badge">
-                  Hot
+                          payload="service"
+                          [formField]="stockItemForm.type">
+                  Service
                 </cm-radio>
               </cm-flex-row>
             </cm-control>
+
+            @if (!isService()) {
+              <cm-control label="Badge">
+                <cm-flex-row size="small">
+                  <cm-radio size="small"
+                            [markOnHover]="true"
+                            payload=""
+                            [formField]="stockItemForm.badge">
+
+                    None
+                  </cm-radio>
+                  <cm-radio size="small"
+                            payload="hot"
+                            [markOnHover]="true"
+                            [formField]="stockItemForm.badge">
+                    Hot
+                  </cm-radio>
+                </cm-flex-row>
+              </cm-control>
+            }
 
             <cm-control label="Description">
               <cm-textarea placeholder=""
                            [formField]="stockItemForm.description"></cm-textarea>
             </cm-control>
 
-            <cm-control label="Category">
-              <cm-multiselect [autoLoad]="true"
-                              compareField="id"
-                              [formField]="stockItemForm.category_id"
-                              resource="categories">
-              </cm-multiselect>
-            </cm-control>
+            @if (!isService()) {
+              <cm-control label="Category">
+                <cm-multiselect [autoLoad]="true"
+                                compareField="id"
+                                [formField]="stockItemForm.category_id"
+                                resource="categories">
+                </cm-multiselect>
+              </cm-control>
+            }
 
             <cm-flex-row size="small"
                          [equal]="true">
@@ -143,6 +165,7 @@ export class StockBuilderComponent {
     cost_price: 0,
     category_id: null,
     badge: '',
+    type: 'products',
   });
   readonly stockItemForm = form(
     this.stockItemModel,
@@ -153,6 +176,21 @@ export class StockBuilderComponent {
     }
   );
   readonly loading = signal(false);
+  readonly storedEffect = effect(() => {
+    const value = this.stored.value();
+    if (value) {
+      this.stockItemModel.set({
+        name: value.name,
+        description: value.description,
+        price: value.price,
+        cost_price: value.cost_price,
+        category_id: value.category_id ? {id: value.category_id} : null,
+        badge: value.badge || '',
+        type: value.is_service ? 'service' : 'products',
+      });
+    }
+  })
+  readonly isService = computed(() => this.stockItemForm().value().type === 'service')
   private readonly _stockService = inject(StockService);
   readonly stored = resource({
     params: () => ({uuid: this.uuid()}),
@@ -163,19 +201,6 @@ export class StockBuilderComponent {
       return firstValueFrom(this._stockService.getOneProduct(params!.uuid));
     },
   });
-  readonly storedEffect = effect(() => {
-    const value = this.stored.value();
-    if (value) {
-      this.stockItemModel.set({
-        name: value.name,
-        description: value.description,
-        price: value.price,
-        cost_price: value.cost_price,
-        category_id: value.category_id ?? null,
-        badge: value.badge || '',
-      });
-    }
-  })
   private readonly _notificationsService = inject(NotificationsService);
 
   onSubmit(event: Event) {
@@ -210,8 +235,9 @@ export class StockBuilderComponent {
       description: model.description,
       price: +model.price,
       cost_price: +model.cost_price,
-      category_id: model.category_id,
+      category_id: model.category_id?.id || null,
       badge: model.badge || null,
+      is_service: model.type === 'service',
     }
   }
 }

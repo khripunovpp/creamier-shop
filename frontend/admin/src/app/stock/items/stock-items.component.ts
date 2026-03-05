@@ -182,9 +182,12 @@ export class StockItemsComponent {
 
   readonly groupedStock = computed(() => {
     const items = this.stock.value() ?? [];
+    const products = items.filter(i => !i.is_service);
+    const services = items.filter(i => i.is_service);
+
     const map = new Map<string, { categoryName: string; items: StockItem[] }>();
 
-    for (const item of items) {
+    for (const item of products) {
       const key = item.category_id ?? '__none__';
       const categoryName = item.category?.name ?? 'No category';
       if (!map.has(key)) {
@@ -193,12 +196,18 @@ export class StockItemsComponent {
       map.get(key)!.items.push(item);
     }
 
-    // Put "No category" group last
+    // Put "No category" group last among products
     const groups = Array.from(map.values());
     const noneIndex = groups.findIndex(g => g.categoryName === 'No category');
     if (noneIndex > 0) {
       groups.push(groups.splice(noneIndex, 1)[0]);
     }
+
+    // Services always at the very bottom
+    if (services.length > 0) {
+      groups.push({categoryName: 'Services', items: services});
+    }
+
     return groups;
   });
   private readonly _notificationsService = inject(NotificationsService);

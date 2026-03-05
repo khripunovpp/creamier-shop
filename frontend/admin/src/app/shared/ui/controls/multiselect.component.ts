@@ -188,8 +188,6 @@ export class MultiselectComponent
     const valA = a as any;
     const valB = b as any;
 
-    console.log('compareWith', valA, valB);
-
     return valA?.[this.compareField()] === valB
       || valA === valB
       || valA?.[this.compareField()] === valB?.[this.compareField()]
