@@ -63,6 +63,14 @@ CREATE TYPE "public"."order_status" AS ENUM (
 
 ALTER TYPE "public"."order_status" OWNER TO "postgres";
 
+CREATE TYPE "public"."order_delivery_type" AS ENUM (
+    'pickup',
+    'delivery'
+);
+
+
+ALTER TYPE "public"."order_delivery_type" OWNER TO "postgres";
+
 
 CREATE TYPE "public"."stock_operation" AS ENUM (
     'add',
@@ -147,6 +155,7 @@ CREATE TABLE IF NOT EXISTS "public"."orders" (
     "completed_at" timestamp with time zone,
     "delivery_date" timestamp with time zone,
     "delivery_info" "jsonb",
+    "delivery_type" "public"."order_delivery_type" DEFAULT 'pickup'::"public"."order_delivery_type",
     "status" "public"."order_status" DEFAULT 'created'::"public"."order_status",
     "total_amount" numeric DEFAULT 0 NOT NULL,
     "discount_amount" numeric DEFAULT 0,
@@ -170,19 +179,21 @@ CREATE TABLE IF NOT EXISTS "public"."stock_items" (
     "is_service" boolean DEFAULT false,
     "status" "public"."stock_status" DEFAULT 'active'::"public"."stock_status",
     "created_at" timestamp with time zone DEFAULT "now"(),
-    "stopped_at" timestamp with time zone
-    "category_id" uuid REFERENCES categories(id)
+    "stopped_at" timestamp with time zone,
+    "category_id" "uuid",
+    "badge" text CHECK ("badge" IN ('sale', 'hot')) DEFAULT NULL
 );
 
 
 ALTER TABLE "public"."stock_items" OWNER TO "postgres";
 
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS "public"."categories" (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
   created_at timestamptz DEFAULT now()
 );
 
+ALTER TABLE "public"."categories" OWNER TO "postgres";
 
 CREATE OR REPLACE VIEW "public"."public_products" WITH ("security_invoker"='false') AS
  SELECT "id",
@@ -296,6 +307,11 @@ ALTER TABLE ONLY "public"."stock_changes"
 
 ALTER TABLE ONLY "public"."stock_movements"
     ADD CONSTRAINT "stock_movements_stock_item_id_fkey" FOREIGN KEY ("stock_item_id") REFERENCES "public"."stock_items"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."stock_items"
+    ADD CONSTRAINT "stock_items_category_id_id_fkey" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE CASCADE;
 
 
 

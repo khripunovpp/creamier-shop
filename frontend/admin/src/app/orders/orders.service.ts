@@ -35,6 +35,7 @@ export interface Order {
     telegram: string | null
     whatsapp: string | null
   }
+  delivery_type: 'pickup' | 'shipping'
 }
 
 type CreateOrderDto = Omit<

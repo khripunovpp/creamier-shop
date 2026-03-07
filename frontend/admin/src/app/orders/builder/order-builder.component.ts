@@ -1,4 +1,4 @@
-import {Component, effect, inject, resource, signal} from '@angular/core';
+import {Component, computed, effect, inject, resource, signal} from '@angular/core';
 import {form, FormField, required, validate} from '@angular/forms/signals';
 import {FlexColumnComponent} from '../../shared/ui/layout/flex-column.component';
 import {FlexRowComponent} from '../../shared/ui/layout/flex-row.component';
@@ -94,6 +94,22 @@ export type OrderModel = Omit<Order,
                   <cm-textarea [formField]="orderForm.comment"></cm-textarea>
                 </cm-control>
 
+                <cm-flex-row>
+                  <cm-radio size="small"
+                            [markOnHover]="true"
+                            payload="pickup"
+                            [formField]="orderForm.delivery_type">
+                    Pickup
+                  </cm-radio>
+
+                  <cm-radio size="small"
+                            [markOnHover]="true"
+                            payload="shipping"
+                            [formField]="orderForm.delivery_type">
+                    Shipping
+                  </cm-radio>
+                </cm-flex-row>
+
                 <cm-control label="Delivery date">
                   <cm-flex-row size="small"
                                cmExpand
@@ -103,21 +119,23 @@ export type OrderModel = Omit<Order,
                   </cm-flex-row>
                 </cm-control>
 
-                <cm-flex-row size="small"
-                             cmExpand
-                             [equal]="true">
-                  <cm-control label="Postal code">
-                    <cm-input [formField]="orderForm.delivery_info.postalCode"></cm-input>
-                  </cm-control>
+                @if (!isPickup()) {
+                  <cm-flex-row size="small"
+                               cmExpand
+                               [equal]="true">
+                    <cm-control label="Postal code">
+                      <cm-input [formField]="orderForm.delivery_info.postalCode"></cm-input>
+                    </cm-control>
 
-                  <cm-control label="Address line 1">
-                    <cm-input [formField]="orderForm.delivery_info.addressLine1"></cm-input>
-                  </cm-control>
+                    <cm-control label="Address line 1">
+                      <cm-input [formField]="orderForm.delivery_info.addressLine1"></cm-input>
+                    </cm-control>
 
-                  <cm-control label="Address line 2">
-                    <cm-input [formField]="orderForm.delivery_info.addressLine2"></cm-input>
-                  </cm-control>
-                </cm-flex-row>
+                    <cm-control label="Address line 2">
+                      <cm-input [formField]="orderForm.delivery_info.addressLine2"></cm-input>
+                    </cm-control>
+                  </cm-flex-row>
+                }
               </cm-flex-column>
 
               <cm-flex-column size="small">
@@ -125,23 +143,27 @@ export type OrderModel = Omit<Order,
                   Order items
                 </cm-title>
 
-                <cm-flex-row size="small"
-                             [center]="true">
-                  <div cmExpand>
-                    Product
-                  </div>
-                  <div cmWidth="15%">
-                    Quantity
-                  </div>
-                  <div cmWidth="1%">x</div>
-                  <div cmWidth="15%">
-                    Price
-                  </div>
-                  <div cmWidth="1%">=</div>
-                  <div cmWidth="15%">
-                    Sum
-                  </div>
-                </cm-flex-row>
+                @if (orderForm.items.length) {
+                  <cm-flex-row size="small"
+                               [center]="true">
+                    <div cmExpand>
+                      Product
+                    </div>
+                    <div cmWidth="15%">
+                      Quantity
+                    </div>
+                    <div cmWidth="1%">x</div>
+                    <div cmWidth="15%">
+                      Price
+                    </div>
+                    <div cmWidth="1%">=</div>
+                    <div cmWidth="15%">
+                      Sum
+                    </div>
+                  </cm-flex-row>
+                } @else {
+                  <div>No items has chosen, it's strange</div>
+                }
 
                 @for (item of orderForm.items; track item.stock_item_id; let i = $index) {
                   <cm-flex-row size="small"
@@ -318,14 +340,21 @@ export class OrderBuilderComponent {
       phone_number: null,
       telegram: null,
       whatsapp: null,
-    }
+    },
+    delivery_type: 'pickup',
   });
   readonly orderForm = form(
     this.orderModel,
     (path) => {
       required(path.delivery_date, {message: 'Delivery date is required'});
-      required(path.delivery_info.postalCode, {message: 'Postal code is required'});
-      required(path.delivery_info.addressLine1, {message: 'Address line 1 is required'});
+      required(path.delivery_info.postalCode, {
+        message: 'Postal code is required',
+        when: ({valueOf}) => valueOf(path.delivery_type) === 'shipping',
+      });
+      required(path.delivery_info.addressLine1, {
+        message: 'Address line 1 is required',
+        when: ({valueOf}) => valueOf(path.delivery_type) === 'shipping',
+      });
       required(path.customer.name, {message: 'Customer name is required'});
       validate(path.customer, ({value}) => {
         const customer = value();
@@ -361,18 +390,30 @@ export class OrderBuilderComponent {
           sum: item.price * item.quantity
         })),
         delivery_date: value.delivery_date,
-        delivery_info: value.delivery_info,
-        comment: value.comment,
+        delivery_info: {
+          postalCode: value.delivery_info?.postalCode ?? '',
+          addressLine1: value.delivery_info?.addressLine1 ?? '',
+          addressLine2: value.delivery_info?.addressLine2 ?? '',
+        },
+        delivery_type: value.delivery_type,
+        comment: value.comment ?? '',
         discount_amount: value.discount_amount,
-        payment_data: value.payment_data,
+        payment_data: value.payment_data ?? '',
         payment_method: value.payment_method,
         completed_at: value.completed_at,
         paid_at: value.paid_at,
-        customer: value.customer,
+        customer: {
+          name: value.customer?.name ?? '',
+          phone_number: value.customer?.phone_number ?? '',
+          email: value.customer?.email ?? '',
+          telegram: value.customer?.telegram ?? '',
+          whatsapp: value.customer?.whatsapp ?? '',
+        },
       });
     }
   });
   private readonly _notificationsService = inject(NotificationsService);
+  readonly isPickup = computed(() => this.orderForm().value().delivery_type === 'pickup')
 
   onSubmit(event: Event) {
     event.preventDefault();
@@ -429,6 +470,7 @@ export class OrderBuilderComponent {
       completed_at: model.completed_at,
       paid_at: model.paid_at,
       customer: model.customer,
+      delivery_type: model.delivery_type,
     }
   }
 }

@@ -10,11 +10,7 @@ export class DeliveryService {
   }
 
   private _deliveryDetails: DeliveryDetails = {
-    shipping: {
-      postalCode: '2342-213',
-      addressLine1: 'Rua de São Bento, 123',
-      addressLine2: '2º Esq.',
-    },
+    shipping: undefined,
     time: Date.now(),
     phoneNumber: '+351 912345678',
     email: 'pashtito@gmail.com',

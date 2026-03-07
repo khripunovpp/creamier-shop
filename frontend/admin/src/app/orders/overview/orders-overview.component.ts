@@ -34,7 +34,7 @@ import {RouterLink} from '@angular/router';
           }
         </cm-flex-row>
 
-        @if (orders.hasValue()) {
+        @if (orders.value()?.length) {
           <cm-table-card [size]="'medium'">
             <table>
               <colgroup>
@@ -62,9 +62,15 @@ import {RouterLink} from '@angular/router';
                       }
                       <a class="cm-link"
                          [routerLink]="['/orders', item.id]">
-                        {{ item.delivery_info.postalCode }}<br>
-                        {{ item.delivery_info.addressLine1 }}<br>
-                        {{ item.delivery_info.addressLine2 }}
+                        @if (item.delivery_info) {
+                          {{ item.delivery_info.postalCode }}<br>
+                          {{ item.delivery_info.addressLine1 }}<br>
+                          {{ item.delivery_info.addressLine2 }}
+                        } @else if (item.delivery_type === 'pickup') {
+                          Pickup
+                        } @else {
+                          No address
+                        }
                       </a>
                     </td>
                     <td>
@@ -111,6 +117,8 @@ import {RouterLink} from '@angular/router';
               </tbody>
             </table>
           </cm-table-card>
+        } @else {
+          <div>No orders yet</div>
         }
       </cm-flex-column>
     </cm-container>

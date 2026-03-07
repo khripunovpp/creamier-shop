@@ -3,7 +3,7 @@ import {cors} from "hono/cors";
 import stockRoutes from "./routes/admin/stock";
 import categoriesRoutes from "./routes/admin/categories";
 import loginRoutes from "./routes/auth/login";
-import productsPublicRoutes from "./routes/public/products";
+import productsPublicRoutes from "./routes/public/public-routes";
 import {SupabaseClient, User} from "@supabase/supabase-js";
 import {requireAdmin} from "./middleware/auth";
 import ordersRoutes from "./routes/admin/orders";

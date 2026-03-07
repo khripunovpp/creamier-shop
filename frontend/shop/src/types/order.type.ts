@@ -2,7 +2,7 @@ import {CartItem} from './cart.type';
 import {Countable} from './countable';
 
 export interface DeliveryDetails {
-  shipping: ShippingDetails
+  shipping: ShippingDetails | undefined
   time: number
   phoneNumber: string
   email: string

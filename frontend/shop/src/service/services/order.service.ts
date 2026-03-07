@@ -46,6 +46,7 @@ export class OrderService {
       whatsapp: order.delivery.whatsapp,
       delivery_date: new Date(order.delivery.time).toISOString(),
       delivery_info: order.delivery.shipping,
+      delivery_type: order.delivery.shipping ? 'shipping' : 'pickup',
       comment: order.delivery.comment,
     };
     return this._apiService.post(

@@ -38,7 +38,7 @@ import {firstValueFrom} from 'rxjs';
           </cm-button>
         </cm-flex-row>
 
-        @if (categories.hasValue()) {
+        @if (categories.value()!.length) {
           <cm-table-card [size]="'medium'">
             <table>
               <colgroup>
@@ -66,10 +66,8 @@ import {firstValueFrom} from 'rxjs';
               </tbody>
             </table>
           </cm-table-card>
-        }
-
-        @if (categories.hasValue() && categories.value()!.length === 0) {
-          <p>No categories yet. Create the first one!</p>
+        } @else {
+          <div>No categories yet. Create the first one!</div>
         }
       </cm-flex-column>
     </cm-container>

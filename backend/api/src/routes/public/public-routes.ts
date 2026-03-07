@@ -17,9 +17,8 @@ ordersPublicRoutes.get("/products", async (c) => {
   const {data, error} = await supabase.from("public_products")
     .select("*");
 
-  console.log("Fetched products", {data, error});
-
   if (error) {
+    console.error("Failed to fetch products", {error});
     return c.json({error: "Failed to fetch products"}, 500);
   }
 
@@ -40,6 +39,7 @@ ordersPublicRoutes.get("/products/:id", async (c) => {
     .single();
 
   if (error) {
+    console.error("Failed to fetch product", {error});
     return c.json({error: "Failed to fetch product"}, 500);
   }
 
@@ -61,6 +61,7 @@ ordersPublicRoutes.post("/orders/create", async (c) => {
     name,
     delivery_date,
     delivery_info,
+    delivery_type,
     comment,
     phone_number,
     telegram,
@@ -77,6 +78,7 @@ ordersPublicRoutes.post("/orders/create", async (c) => {
     p_items: items,
     p_delivery_date: delivery_date,
     p_delivery_info: delivery_info,
+    p_delivery_type: delivery_type,
     p_comment: comment,
   });
   if (error) {
@@ -90,7 +92,6 @@ ordersPublicRoutes.post("/orders/create", async (c) => {
 
     return c.json({error: "Failed to create order"}, 500);
   }
-
 
   return c.json({
     orderId: data,
