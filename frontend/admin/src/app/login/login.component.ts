@@ -11,6 +11,7 @@ import {environment} from '../../env/environment';
 import {Router} from '@angular/router';
 import {RoutesEnum} from '../routes.enum';
 import {ContainerComponent} from '../shared/ui/layout/container.component';
+import {errorToString} from '../shared/helpers/errors.helper';
 
 interface LoginData {
   email: string;
@@ -87,7 +88,7 @@ export class LoginComponent {
 
   onSubmit(event: Event) {
     event.preventDefault();
-    // Perform login logic here
+
     submit(this.loginForm, async () => {
       if (this.loginForm().invalid()) return;
       const credentials = this.loginModel();
@@ -96,8 +97,7 @@ export class LoginComponent {
           this._router.navigate([RoutesEnum.dashboard]);
         })
         .catch((err) => {
-          console.error('Login failed', err);
-          this._notificationsService.error('Login failed');
+          this._notificationsService.error(errorToString(err));
         });
     });
   }
