@@ -1,6 +1,6 @@
-# Backend API
+# Backend API (Admin/Auth)
 
-Cloudflare Workers API на Hono.
+Cloudflare Worker для админки и авторизации.
 
 ## Стек
 
@@ -17,7 +17,6 @@ src/
   index.ts              — Точка входа, CORS, роутинг
   middleware/auth.ts     — requireAdmin (cookie admin_token → Supabase verify)
   routes/
-    public/             — Публичные эндпоинты (продукты, заказы)
     admin/              — Защищённые CRUD (stock, categories, orders)
     auth/login.ts       — Логин
     telegram/webhook.ts — Telegram бот
@@ -33,10 +32,4 @@ src/
 ## Конфигурация
 
 - `wrangler.toml` — конфиг Cloudflare Worker
-- `.dev.vars` / `.dev.vars.local` — env-переменные (SUPABASE_URL, ключи, JWT_SECRET)
-
-## CORS
-
-- `/api/admin/*` — localhost:4200 (GET, POST, PUT, DELETE)
-- `/api/auth/*` — localhost:4200 (POST)
-- `/api/public/*` — localhost:4201 (GET, OPTIONS)
+- `.dev.vars` — env-переменные (SUPABASE_URL, ключи, JWT_SECRET, CORS_ORIGIN)

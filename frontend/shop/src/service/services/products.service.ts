@@ -15,7 +15,7 @@ export class ProductsService {
 
   // TODO прибито гвоздями
   getProducts$ = this._apiService.get<Product[]>(
-    environment.worker_url + '/api/public/products',
+    environment.worker_url + '/api/products',
   ).pipe(
     map(products => products.map(p => ({
       ...p,

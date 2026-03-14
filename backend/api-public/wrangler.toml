@@ -1,0 +1,11 @@
+name = "creamier-api-public"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+compatibility_flags = ["nodejs_compat"]
+
+workers_dev = false
+send_metrics = false
+
+[dev]
+port = 3334

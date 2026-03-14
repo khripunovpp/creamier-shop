@@ -50,7 +50,7 @@ export class OrderService {
       comment: order.delivery.comment,
     };
     return this._apiService.post(
-      environment.worker_url + '/api/public/orders/create',
+      environment.worker_url + '/api/orders/create',
       parameters
     );
   }

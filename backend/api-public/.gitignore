@@ -1,4 +1,4 @@
-node_modules
-.idea
+.env
+.wrangler
 .dev.vars
 .dev.vars.local

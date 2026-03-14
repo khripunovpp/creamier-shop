@@ -27,7 +27,7 @@ create or replace function create_order(
   p_items jsonb,
   p_delivery_date timestamptz,
   p_delivery_info jsonb,
-  p_delivery_type text,
+  p_delivery_type order_delivery_type,
   p_comment text
 )
 returns uuid
@@ -177,8 +177,8 @@ references customers(id)
 on delete set null;
 
 -- Ограничиваем доступ к функции и разрешаем только аутентифицированным пользователям
-revoke all on function create_order(text, text, text, text, text, text, jsonb, timestamptz, jsonb, text, text) from public;
-grant execute on function create_order(text, text, text, text, text, text, jsonb, timestamptz, jsonb, text, text) to authenticated;
+revoke all on function create_order(text, text, text, text, text, text, jsonb, timestamptz, jsonb, order_delivery_type, text) from public;
+grant execute on function create_order(text, text, text, text, text, text, jsonb, timestamptz, jsonb, order_delivery_type, text) to authenticated;
 
 -- Включаем RLS
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;

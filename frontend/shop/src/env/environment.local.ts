@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  worker_url: 'http://localhost:3333',
+  worker_url: 'http://localhost:3334',
 };

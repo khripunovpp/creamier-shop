@@ -1,23 +1,36 @@
 import {Hono} from "hono";
-import {Bindings, Variables} from "../../index";
+import {Bindings} from "../index";
 import {createClient} from "@supabase/supabase-js";
 import {zValidator} from "@hono/zod-validator";
-import {createOrderScheme} from "../../schemes/create-order.scheme";
-import {mapPgErrorMessage} from "../../utils/pg-error-mapper";
+import {createOrderScheme} from "../schemes/create-order.scheme";
+import {mapPgErrorMessage} from "../utils/pg-error-mapper";
+import {cors} from "hono/cors";
+import {bodyLimit} from "hono/body-limit";
 
-const ordersPublicRoutes = new Hono<{
+const publicRoutes = new Hono<{
   Bindings: Bindings;
-  Variables: Variables;
 }>();
 
-ordersPublicRoutes.get("/products", async (c) => {
+publicRoutes.use("/*", bodyLimit({
+  maxSize: 64 * 1024, // 64KB
+  onError: (c) => c.json({error: "Request body too large"}, 413),
+}));
+
+publicRoutes.use("/*", cors({
+  origin: (_origin, c) => c.env.CORS_ORIGIN,
+  allowMethods: ["GET", "POST", "OPTIONS"],
+  allowHeaders: ["Content-Type"],
+  credentials: true,
+}));
+
+publicRoutes.get("/products", async (c) => {
   const supabase = createClient(
     c.env.SUPABASE_URL,
     c.env.SUPABASE_PUBLISHABLE_KEY,
   );
 
   const {data, error} = await supabase.from("public_products")
-    .select("*");
+    .select("id, name, price, description, status, badge, category_name, available_quantity");
 
   if (error) {
     console.error("Failed to fetch products", {error});
@@ -27,7 +40,7 @@ ordersPublicRoutes.get("/products", async (c) => {
   return c.json(data);
 });
 
-ordersPublicRoutes.get("/products/:id", async (c) => {
+publicRoutes.get("/products/:id", async (c) => {
   const supabase = createClient(
     c.env.SUPABASE_URL,
     c.env.SUPABASE_PUBLISHABLE_KEY,
@@ -36,7 +49,7 @@ ordersPublicRoutes.get("/products/:id", async (c) => {
   const {id} = c.req.param();
 
   const {data, error} = await supabase.from("public_products")
-    .select("*")
+    .select("id, name, price, description, status, badge, category_name, available_quantity")
     .eq("id", id)
     .single();
 
@@ -48,7 +61,7 @@ ordersPublicRoutes.get("/products/:id", async (c) => {
   return c.json(data);
 });
 
-ordersPublicRoutes.post(
+publicRoutes.post(
   "/orders/create",
   zValidator('json', createOrderScheme),
   async (c) => {
@@ -58,8 +71,11 @@ ordersPublicRoutes.post(
     );
 
     const clientIp = c.req.header('CF-Connecting-IP')
-      ?? c.req.header('X-Forwarded-For')
-      ?? 'unknown';
+      ?? (c.env.DEV_MODE === 'true' ? '127.0.0.1' : null);
+
+    if (!clientIp) {
+      return c.json({error: "Forbidden"}, 403);
+    }
 
     const {
       items,
@@ -73,6 +89,19 @@ ordersPublicRoutes.post(
       telegram,
       whatsapp,
     } = c.req.valid('json');
+
+    console.log("Creating order", {
+      clientIp,
+      name,
+      email,
+      phone_number,
+      telegram,
+      whatsapp,
+      items,
+      delivery_date,
+      delivery_info,
+      delivery_type,
+    });
 
     const {data, error} = await supabase.rpc("create_order", {
       p_client_key: clientIp,
@@ -99,9 +128,11 @@ ordersPublicRoutes.post(
       return c.json({error: "Failed to create order"}, 500);
     }
 
+    console.log("Order created", {data: data, clientIp});
+
     return c.json({
       orderId: data,
     });
   });
 
-export default ordersPublicRoutes;
+export default publicRoutes;

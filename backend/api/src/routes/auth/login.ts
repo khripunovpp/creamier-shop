@@ -1,7 +1,7 @@
 import {Hono} from "hono";
 import {Bindings, Variables} from "../../index";
-import {createClient} from "@supabase/supabase-js";
 import {requireAdmin} from "../../middleware/auth";
+import {createSupabaseClient} from "../../utils/supabse-client";
 
 const loginRoutes = new Hono<{
   Bindings: Bindings;
@@ -13,10 +13,7 @@ loginRoutes.use("/me", requireAdmin);
 loginRoutes.post("/login", async (c) => {
   const {email, password} = await c.req.json();
 
-  const supabase = createClient(
-    c.env.SUPABASE_URL,
-    c.env.SUPABASE_PUBLISHABLE_KEY,
-  );
+  const supabase = createSupabaseClient(c);
 
   const {data, error} = await supabase.auth.signInWithPassword({
     email,

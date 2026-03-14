@@ -1,0 +1,6 @@
+SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_SERVICE_KEY=your_service_key
+JWT_SECRET=your_jwt_secret
+TG_BOT_TOKEN=your_telegram_bot_token
+TG_SECRET=your_telegram_secret
+CORS_ORIGIN=http://localhost:4200
