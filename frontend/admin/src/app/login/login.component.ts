@@ -57,8 +57,8 @@ interface LoginData {
   ]
 })
 export class LoginComponent {
-
   constructor() {
+    this._httpClient.get(environment.worker_url + '/api/auth/csrf', {withCredentials: true}).subscribe();
   }
 
   private readonly _httpClient = inject(HttpClient);

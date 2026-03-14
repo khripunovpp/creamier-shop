@@ -6,6 +6,7 @@ import {createOrderScheme} from "../schemes/create-order.scheme";
 import {mapPgErrorMessage} from "../utils/pg-error-mapper";
 import {cors} from "hono/cors";
 import {bodyLimit} from "hono/body-limit";
+import {csrfProtection} from "../middleware/csrf";
 
 const publicRoutes = new Hono<{
   Bindings: Bindings;
@@ -19,9 +20,13 @@ publicRoutes.use("/*", bodyLimit({
 publicRoutes.use("/*", cors({
   origin: (_origin, c) => c.env.CORS_ORIGIN,
   allowMethods: ["GET", "POST", "OPTIONS"],
-  allowHeaders: ["Content-Type"],
+  allowHeaders: ["Content-Type", "X-CSRF-Token"],
   credentials: true,
 }));
+
+publicRoutes.get("/csrf", csrfProtection, (c) => {
+  return c.json({ok: true});
+});
 
 publicRoutes.get("/products", async (c) => {
   const supabase = createClient(
@@ -63,6 +68,7 @@ publicRoutes.get("/products/:id", async (c) => {
 
 publicRoutes.post(
   "/orders/create",
+  csrfProtection,
   zValidator('json', createOrderScheme),
   async (c) => {
     const supabase = createClient(

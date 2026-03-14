@@ -5,6 +5,7 @@ import categoriesRoutes from "./routes/admin/categories";
 import loginRoutes from "./routes/auth/login";
 import {SupabaseClient, User} from "@supabase/supabase-js";
 import {requireAdmin} from "./middleware/auth";
+import {csrfProtection} from "./middleware/csrf";
 import ordersRoutes from "./routes/admin/orders";
 
 export type Bindings = {
@@ -30,17 +31,19 @@ const app = new Hono<{
 app.use("/api/admin/*", cors({
   origin: (_origin, c) => c.env.CORS_ORIGIN,
   allowMethods: ["GET", "POST", "OPTIONS", "PUT"],
-  allowHeaders: ["Content-Type", "Authorization"],
+  allowHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
   credentials: true,
 }));
 
 app.use("/api/auth/*", cors({
   origin: (_origin, c) => c.env.CORS_ORIGIN,
   allowMethods: ["GET", "POST", "OPTIONS"],
-  allowHeaders: ["Content-Type", "Authorization"],
+  allowHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
   credentials: true,
 }));
 
+app.use("/api/admin/*", csrfProtection);
+app.use("/api/auth/*", csrfProtection);
 app.use("/api/admin/*", requireAdmin);
 
 // Health check

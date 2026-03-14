@@ -5,6 +5,7 @@ export type Bindings = {
   SUPABASE_URL: string;
   SUPABASE_PUBLISHABLE_KEY: string;
   CORS_ORIGIN: string;
+  CSRF_SECRET: string;
   DEV_MODE?: string;
 };
 

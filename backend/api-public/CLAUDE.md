@@ -13,10 +13,12 @@ Cloudflare Worker для публичного API магазина. Изолир
 
 ```
 src/
-  index.ts                       — Точка входа, CORS, роутинг
-  routes/public-routes.ts        — Products (GET), Orders/create (POST)
-  schemes/create-order.scheme.ts — Zod-схема создания заказа
-  utils/pg-error-mapper.ts       — Маппинг PG-ошибок в user-facing сообщения
+  index.ts                       — Точка входа, роутинг
+  routes/public-routes.ts        — Products (GET), Orders/create (POST), CORS, body limit
+  schemes/create-order.scheme.ts — Zod-схема с санитайзингом и .strict()
+  utils/
+    pg-error-mapper.ts           — Маппинг PG-ошибок в user-facing сообщения
+    sanitize.ts                  — Strip HTML, zero-width chars, trim
 ```
 
 ## Команды
@@ -36,3 +38,7 @@ src/
 - PG-ошибки маппятся, сырые сообщения не утекают клиенту
 - IP клиента берётся из CF-Connecting-IP (за Cloudflare)
 - Rate limiting на уровне БД (1 заказ/мин на IP)
+- Санитайзинг входных данных (strip HTML, zero-width unicode, trim)
+- Body size limit 64KB
+- `.strict()` на Zod-схеме — лишние поля отклоняются
+- DEV_MODE fallback для локальной разработки без Cloudflare

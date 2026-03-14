@@ -8,6 +8,10 @@ const loginRoutes = new Hono<{
   Variables: Variables;
 }>();
 
+loginRoutes.get("/csrf", (c) => {
+  return c.json({ok: true});
+});
+
 loginRoutes.use("/me", requireAdmin);
 
 loginRoutes.post("/login", async (c) => {

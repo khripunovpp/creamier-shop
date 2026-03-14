@@ -15,6 +15,6 @@ export class ApiService {
   }
 
   post<T>(url: string, body: any) {
-    return this._http.post<T>(url, body);
+    return this._http.post<T>(url, body, {withCredentials: true});
   }
 }

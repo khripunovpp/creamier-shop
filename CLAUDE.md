@@ -33,8 +33,8 @@ frontend/
 ## API маршруты
 
 ### api (порт 3333)
-- `/api/admin/*` — защищены `requireAdmin` middleware (cookie `admin_token`)
-- `/api/auth/*` — логин
+- `/api/admin/*` — защищены `requireAdmin` + CSRF middleware (cookie `admin_token`)
+- `/api/auth/*` — логин + CSRF token endpoint
 
 ### api-public (порт 3334)
 - `/api/products` — список продуктов

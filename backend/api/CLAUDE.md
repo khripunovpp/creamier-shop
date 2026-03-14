@@ -15,7 +15,9 @@ Cloudflare Worker для админки и авторизации.
 ```
 src/
   index.ts              — Точка входа, CORS, роутинг
-  middleware/auth.ts     — requireAdmin (cookie admin_token → Supabase verify)
+  middleware/
+    auth.ts             — requireAdmin (cookie admin_token → Supabase verify)
+    csrf.ts             — CSRF-защита (HMAC-подписанный токен)
   routes/
     admin/              — Защищённые CRUD (stock, categories, orders)
     auth/login.ts       — Логин
