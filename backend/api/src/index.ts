@@ -44,7 +44,7 @@ app.use("/api/auth/*", cors({
 
 app.use("/api/public/*", cors({
   origin: "http://localhost:4201", // твой фронт
-  allowMethods: ["GET", "OPTIONS"],
+  allowMethods: ["GET", "POST", "OPTIONS"],
   allowHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));

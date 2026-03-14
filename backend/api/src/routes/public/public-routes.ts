@@ -1,7 +1,9 @@
 import {Hono} from "hono";
 import {Bindings, Variables} from "../../index";
 import {createClient} from "@supabase/supabase-js";
-import {getConnInfo} from 'hono/cloudflare-workers'
+import {zValidator} from "@hono/zod-validator";
+import {createOrderScheme} from "../../schemes/create-order.scheme";
+import {mapPgErrorMessage} from "../../utils/pg-error-mapper";
 
 const ordersPublicRoutes = new Hono<{
   Bindings: Bindings;
@@ -46,56 +48,60 @@ ordersPublicRoutes.get("/products/:id", async (c) => {
   return c.json(data);
 });
 
-// TODO validation, error handling, logging
-ordersPublicRoutes.post("/orders/create", async (c) => {
-  const supabase = createClient(
-    c.env.SUPABASE_URL,
-    c.env.SUPABASE_PUBLISHABLE_KEY,
-  );
+ordersPublicRoutes.post(
+  "/orders/create",
+  zValidator('json', createOrderScheme),
+  async (c) => {
+    const supabase = createClient(
+      c.env.SUPABASE_URL,
+      c.env.SUPABASE_PUBLISHABLE_KEY,
+    );
 
-  const info = getConnInfo(c);
+    const clientIp = c.req.header('CF-Connecting-IP')
+      ?? c.req.header('X-Forwarded-For')
+      ?? 'unknown';
 
-  const {
-    items,
-    email,
-    name,
-    delivery_date,
-    delivery_info,
-    delivery_type,
-    comment,
-    phone_number,
-    telegram,
-    whatsapp,
-  } = await c.req.json();
+    const {
+      items,
+      email,
+      name,
+      delivery_date,
+      delivery_info,
+      delivery_type,
+      comment,
+      phone_number,
+      telegram,
+      whatsapp,
+    } = c.req.valid('json');
 
-  const {data, error} = await supabase.rpc("create_order", {
-    p_client_key: info.remote.address,
-    p_name: name,
-    p_email: email,
-    p_phone_number: phone_number,
-    p_telegram: telegram,
-    p_whatsapp: whatsapp,
-    p_items: items,
-    p_delivery_date: delivery_date,
-    p_delivery_info: delivery_info,
-    p_delivery_type: delivery_type,
-    p_comment: comment,
-  });
-  if (error) {
-    console.error("Order creation failed (internal)", error);
+    const {data, error} = await supabase.rpc("create_order", {
+      p_client_key: clientIp,
+      p_name: name,
+      p_email: email,
+      p_phone_number: phone_number,
+      p_telegram: telegram,
+      p_whatsapp: whatsapp,
+      p_items: items,
+      p_delivery_date: delivery_date,
+      p_delivery_info: delivery_info,
+      p_delivery_type: delivery_type,
+      p_comment: comment,
+    });
+    if (error) {
+      console.error("Order creation failed (internal)", error);
 
-    if (error.code === "P0001") {
-      return c.json({
-        error: error.message
-      }, 400);
+      if (error.code === "P0001") {
+        return c.json({
+          error: mapPgErrorMessage(error.message)
+        }, 400);
+      }
+
+      return c.json({error: "Failed to create order"}, 500);
     }
 
-    return c.json({error: "Failed to create order"}, 500);
-  }
-
-  return c.json({
-    orderId: data,
+    return c.json({
+      orderId: data,
+    });
   });
-});
 
 export default ordersPublicRoutes;
