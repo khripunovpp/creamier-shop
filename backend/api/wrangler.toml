@@ -1,4 +1,4 @@
-name = "worker-template"
+name = "cms-admin-creamiershop"
 main = "src/index.ts"
 compatibility_date = "2026-01-01"
 
