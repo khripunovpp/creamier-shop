@@ -8,10 +8,6 @@ const loginRoutes = new Hono<{
   Variables: Variables;
 }>();
 
-loginRoutes.get("/csrf", (c) => {
-  return c.json({ok: true});
-});
-
 loginRoutes.use("/me", requireAdmin);
 
 loginRoutes.post("/login", async (c) => {
@@ -28,13 +24,7 @@ loginRoutes.post("/login", async (c) => {
     return c.json({error: "Invalid credentials"}, 401);
   }
 
-  const accessToken = data.session.access_token;
-
-  return c.json({success: true}, {
-    headers: {
-      "Set-Cookie": `admin_token=${accessToken}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=43200`
-    }
-  });
+  return c.json({token: data.session.access_token});
 });
 
 loginRoutes.get("/me", async (c) => {

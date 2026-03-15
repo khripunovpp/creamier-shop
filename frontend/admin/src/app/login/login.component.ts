@@ -59,7 +59,6 @@ interface LoginData {
 })
 export class LoginComponent {
   constructor() {
-    this._httpClient.get(environment.worker_url + '/api/auth/csrf', {withCredentials: true}).subscribe();
   }
 
   private readonly _httpClient = inject(HttpClient);
@@ -79,11 +78,16 @@ export class LoginComponent {
     email: string
     password: string
   }) {
-    return firstValueFrom(this._httpClient.post(
+    return firstValueFrom(this._httpClient.post<{ token: string }>(
       environment.worker_url + '/api/auth/login',
       credentials,
-      {withCredentials: true}
-    ));
+    )).then(resp => {
+      try {
+        localStorage.setItem('admin_token', resp.token);
+      } catch (e) {
+
+      }
+    })
   }
 
   onSubmit(event: Event) {
@@ -93,7 +97,7 @@ export class LoginComponent {
       if (this.loginForm().invalid()) return;
       const credentials = this.loginModel();
       this.signIn(credentials)
-        .then((res) => {
+        .then(() => {
           this._router.navigate([RoutesEnum.dashboard]);
         })
         .catch((err) => {

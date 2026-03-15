@@ -6,14 +6,14 @@ import {provideHotToastConfig} from '@ngxpert/hot-toast';
 import {provideDateFnsAdapter} from '@angular/material-date-fns-adapter';
 import {ru} from 'date-fns/locale';
 import {routes} from './app.routes';
-import {csrfInterceptor} from './shared/interceptors/csrf.interceptor';
+import {authInterceptor} from './shared/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([
-      csrfInterceptor,
+      authInterceptor,
     ])),
     provideHotToastConfig(),
     provideDateFnsAdapter(),

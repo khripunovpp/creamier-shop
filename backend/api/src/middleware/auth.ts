@@ -1,9 +1,9 @@
 import {Context, Next} from "hono";
-import {getCookie} from "hono/cookie";
 import {createSupabaseClient} from "../utils/supabse-client";
 
 export async function requireAdmin(c: Context, next: Next) {
-  const token = getCookie(c, "admin_token");
+  const authHeader = c.req.header("Authorization");
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
   if (!token) {
     return c.json({error: "Unauthorized"}, 401);
