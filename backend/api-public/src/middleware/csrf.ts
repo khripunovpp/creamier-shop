@@ -59,7 +59,7 @@ export async function csrfProtection(c: Context, next: Next) {
     setCookie(c, CSRF_COOKIE, await createSignedToken(secret), {
       httpOnly: false,
       secure: true,
-      sameSite: "Strict",
+      sameSite: "None",
       path: "/",
       maxAge: 43200,
     });
