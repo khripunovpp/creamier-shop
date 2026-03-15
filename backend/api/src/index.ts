@@ -5,7 +5,6 @@ import categoriesRoutes from "./routes/admin/categories";
 import loginRoutes from "./routes/auth/login";
 import {SupabaseClient, User} from "@supabase/supabase-js";
 import {requireAdmin} from "./middleware/auth";
-import {csrfProtection} from "./middleware/csrf";
 import ordersRoutes from "./routes/admin/orders";
 
 export type Bindings = {
@@ -42,8 +41,8 @@ app.use("/api/auth/*", cors({
   credentials: true,
 }));
 
-app.use("/api/admin/*", csrfProtection);
-app.use("/api/auth/*", csrfProtection);
+// app.use("/api/admin/*", csrfProtection);
+// app.use("/api/auth/*", csrfProtection);
 app.use("/api/admin/*", requireAdmin);
 
 // Health check
