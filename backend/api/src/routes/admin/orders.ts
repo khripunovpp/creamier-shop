@@ -52,7 +52,6 @@ ordersRoutes.get("/:id", async (c) => {
   return c.json(data);
 });
 
-// TODO validation, error handling, logging
 ordersRoutes.post('/:id/mark_paid', async (c) => {
   const supabase = c.get("supabaseClient");
 
@@ -61,6 +60,7 @@ ordersRoutes.post('/:id/mark_paid', async (c) => {
   }
 
   const {id: orderId} = c.req.param();
+  const adminId = c.get("user")?.id;
 
   const {
     payment_method,
@@ -106,6 +106,7 @@ ordersRoutes.post('/:id/mark_paid', async (c) => {
         return c.json({error: "Failed to update order status"}, 500);
       }
 
+      console.log("Order marked as paid", {orderId, adminId});
       return c.json({message: "Order marked as paid", order: data});
     } else {
       return c.json({error: "Order cannot be marked as paid"}, 400);
@@ -130,6 +131,7 @@ ordersRoutes.post('/:id/mark_paid', async (c) => {
         return c.json({error: "Failed to update order status"}, 500);
       }
 
+      console.log("Order marked as paid", {orderId, adminId});
       return c.json({message: "Order marked as paid", order: data});
     } else {
       return c.json({error: "Order cannot be marked as paid"}, 400);
@@ -145,6 +147,7 @@ ordersRoutes.post('/:id/mark_delivered', async (c) => {
   }
 
   const {id: orderId} = c.req.param();
+  const adminId = c.get("user")?.id;
 
   const {data: order, error} = await supabase.from("orders")
     .select("*")
@@ -173,6 +176,7 @@ ordersRoutes.post('/:id/mark_delivered', async (c) => {
       return c.json({error: "Failed to update order status"}, 500);
     }
 
+    console.log("Order marked as delivered", {orderId, adminId});
     return c.json({message: "Order marked as delivered", order: data});
   } else {
     return c.json({error: "Order cannot be marked as delivered"}, 400);

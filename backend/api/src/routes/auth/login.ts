@@ -24,6 +24,11 @@ loginRoutes.post("/login", async (c) => {
     return c.json({error: "Invalid credentials"}, 401);
   }
 
+  console.log('User logged in', {
+    id: data.user.id,
+    token: data.session.access_token,
+  });
+
   return c.json({token: data.session.access_token});
 });
 

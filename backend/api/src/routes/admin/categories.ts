@@ -72,6 +72,7 @@ categoriesRoutes.post(
       return c.json({error: "Failed to create category"}, 500);
     }
 
+    console.log("Category created", {id: data.id, adminId: c.get("user")?.id});
     return c.json(data, 201);
   }
 );
@@ -101,6 +102,7 @@ categoriesRoutes.put(
       return c.json({error: "Failed to update category"}, 500);
     }
 
+    console.log("Category updated", {id, adminId: c.get("user")?.id});
     return c.json(data);
   }
 );

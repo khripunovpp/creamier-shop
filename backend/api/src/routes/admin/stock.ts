@@ -98,6 +98,7 @@ stockRoutes.post(
       return c.json({error: "Failed to create product"}, 500);
     }
 
+    console.log("Product created", {id: data.id, adminId: c.get("user")?.id});
     return c.json({
       id: data.id,
     }, 201);
@@ -133,6 +134,7 @@ stockRoutes.put(
       return c.json({error: "Failed to update product"}, 500);
     }
 
+    console.log("Product updated", {id, adminId: c.get("user")?.id});
     return c.json({message: "Product updated successfully"});
   }
 );
@@ -157,6 +159,7 @@ stockRoutes.post('/:id/archive', async (c) => {
     return c.json({error: "Failed to archive product"}, 500);
   }
 
+  console.log("Product archived", {id, adminId: c.get("user")?.id});
   return c.json({message: "Product archived successfully"});
 });
 
@@ -178,6 +181,7 @@ stockRoutes.post('/:id/activate', async (c) => {
     return c.json({error: "Failed to activate product"}, 500);
   }
 
+  console.log("Product activated", {id, adminId: c.get("user")?.id});
   return c.json({message: "Product activated successfully"});
 });
 
@@ -199,6 +203,7 @@ stockRoutes.post('/:id/deactivate', async (c) => {
     return c.json({error: "Failed to deactivate product"}, 500);
   }
 
+  console.log("Product deactivated", {id, adminId: c.get("user")?.id});
   return c.json({message: "Product deactivated successfully"});
 });
 
@@ -262,6 +267,7 @@ stockRoutes.post('/:id/move', async (c) => {
     return c.json({error: "Failed to move stock item"}, 500);
   }
 
+  console.log("Stock moved", {id, operation, quantity, adminId: c.get("user")?.id});
   return c.json({message: "Stock item moved successfully"});
 });
 
