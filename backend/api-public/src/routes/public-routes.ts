@@ -24,40 +24,23 @@ publicRoutes.use("/*", cors({
 }));
 
 
-publicRoutes.get("/products", async (c) => {
+publicRoutes.get("/sets", async (c) => {
   const supabase = createClient(
     c.env.SUPABASE_URL,
     c.env.SUPABASE_PUBLISHABLE_KEY,
   );
 
-  const {data, error} = await supabase.from("public_products")
-    .select("id, name, price, description, status, badge, category_name, available_quantity");
+  const {data, error} = await supabase
+    .from("public_sets")
+    .select("id, slug, name_ru, name_pt, description_ru, description_pt, position, items, rules")
+    .order("position", {ascending: true});
 
   if (error) {
-    console.error("Failed to fetch products", {error});
-    return c.json({error: "Failed to fetch products"}, 500);
+    console.error("Failed to fetch sets", {error});
+    return c.json({error: "Failed to fetch sets"}, 500);
   }
 
-  return c.json(data);
-});
-
-publicRoutes.get("/products/:id", async (c) => {
-  const supabase = createClient(
-    c.env.SUPABASE_URL,
-    c.env.SUPABASE_PUBLISHABLE_KEY,
-  );
-
-  const {id} = c.req.param();
-
-  const {data, error} = await supabase.from("public_products")
-    .select("id, name, price, description, status, badge, category_name, available_quantity")
-    .eq("id", id)
-    .single();
-
-  if (error) {
-    console.error("Failed to fetch product", {error});
-    return c.json({error: "Failed to fetch product"}, 500);
-  }
+  c.header("Cache-Control", "public, max-age=60, stale-while-revalidate=600");
 
   return c.json(data);
 });
@@ -80,60 +63,62 @@ publicRoutes.post(
 
     const {
       items,
-      email,
+      contact_channel,
       name,
+      email,
+      phone_number,
+      telegram,
+      whatsapp,
       delivery_date,
+      delivery_time,
       delivery_info,
       delivery_type,
       comment,
-      phone_number,
-      telegram,
-      whatsapp,
     } = c.req.valid('json');
 
-    console.log("Creating order", {
-      clientIp,
-      name,
-      email,
-      phone_number,
-      telegram,
-      whatsapp,
-      items,
-      delivery_date,
-      delivery_info,
-      delivery_type,
-    });
+    // Only the field matching the chosen channel reaches the DB — server-side
+    // enforcement of "exactly one contact". Schema's refine() already checked
+    // the chosen value is non-empty.
+    const contact = {
+      email:        contact_channel === 'email'    ? email        : null,
+      phone_number: contact_channel === 'phone'    ? phone_number : null,
+      telegram:     contact_channel === 'telegram' ? telegram     : null,
+      whatsapp:     contact_channel === 'whatsapp' ? whatsapp     : null,
+    };
+
+    // delivery_time + the chosen channel piggy-back on delivery_info JSONB so
+    // the RPC signature stays stable.
+    const enrichedDeliveryInfo = {
+      ...(delivery_info ?? {}),
+      ...(delivery_time ? {time: delivery_time} : {}),
+      contact_channel,
+    };
 
     const {data, error} = await supabase.rpc("create_order", {
-      p_client_key: clientIp,
-      p_name: name,
-      p_email: email,
-      p_phone_number: phone_number,
-      p_telegram: telegram,
-      p_whatsapp: whatsapp,
-      p_items: items,
+      p_client_key:    clientIp,
+      p_name:          name,
+      p_email:         contact.email,
+      p_phone_number:  contact.phone_number,
+      p_telegram:      contact.telegram,
+      p_whatsapp:      contact.whatsapp,
+      p_items:         items,
       p_delivery_date: delivery_date,
-      p_delivery_info: delivery_info,
+      p_delivery_info: enrichedDeliveryInfo,
       p_delivery_type: delivery_type,
-      p_comment: comment,
+      p_comment:       comment,
     });
+
     if (error) {
       console.error("Order creation failed (internal)", error);
 
       if (error.code === "P0001") {
-        return c.json({
-          error: mapPgErrorMessage(error.message)
-        }, 400);
+        return c.json({error: mapPgErrorMessage(error.message)}, 400);
       }
 
       return c.json({error: "Failed to create order"}, 500);
     }
 
-    console.log("Order created", {data: data, clientIp});
-
-    return c.json({
-      orderId: data,
-    });
+    return c.json({orderId: data});
   });
 
 export default publicRoutes;

@@ -187,7 +187,8 @@ export class InputComponent
   };
 
   writeValue(value: string): void {
-    this._change(value);
+    // CVA contract: writeValue must NOT fire onChange — only sync internal state.
+    this.value = String(value || '').trim();
   }
 
   registerOnChange(fn: any) {

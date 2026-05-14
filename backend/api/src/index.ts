@@ -1,11 +1,13 @@
 import {Hono} from "hono";
 import {cors} from "hono/cors";
 import stockRoutes from "./routes/admin/stock";
-import categoriesRoutes from "./routes/admin/categories";
 import loginRoutes from "./routes/auth/login";
 import {SupabaseClient, User} from "@supabase/supabase-js";
 import {requireAdmin} from "./middleware/auth";
 import ordersRoutes from "./routes/admin/orders";
+import stockSetsRoutes from "./routes/admin/stock-sets";
+import stockSetRulesRoutes from "./routes/admin/stock-set-rules";
+import stockSetItemsRoutes from "./routes/admin/stock-set-items";
 
 export type Bindings = {
   SUPABASE_URL: string;
@@ -29,7 +31,7 @@ const app = new Hono<{
 
 app.use("/api/admin/*", cors({
   origin: (_origin, c) => c.env.CORS_ORIGIN,
-  allowMethods: ["GET", "POST", "OPTIONS", "PUT"],
+  allowMethods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
   allowHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
   credentials: true,
 }));
@@ -49,9 +51,11 @@ app.use("/api/admin/*", requireAdmin);
 app.get("/", (c) => c.text("Creamier API running 🧁"));
 
 // Подключаем роуты
-app.route("/api/admin/products", stockRoutes);
-app.route("/api/admin/categories", categoriesRoutes);
-app.route("/api/admin/orders", ordersRoutes);
-app.route("/api/auth", loginRoutes);
+app.route("/api/admin/products",        stockRoutes);
+app.route("/api/admin/orders",          ordersRoutes);
+app.route("/api/admin/stock-sets",      stockSetsRoutes);
+app.route("/api/admin/stock-set-rules", stockSetRulesRoutes);
+app.route("/api/admin/stock-set-items", stockSetItemsRoutes);
+app.route("/api/auth",                  loginRoutes);
 
 export default app;

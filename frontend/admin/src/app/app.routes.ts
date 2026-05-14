@@ -4,6 +4,7 @@ import {HttpClient} from '@angular/common/http';
 import {environment} from '../env/environment';
 import {catchError, map, of} from 'rxjs';
 import {ErrorPageComponent} from './errors/error-page.component';
+import {orderBuilderCanDeactivate} from './orders/builder/order-builder.guard';
 
 const authGuard = () => {
   const _httpClient = inject(HttpClient);
@@ -61,25 +62,31 @@ export const routes: Routes = [
         loadComponent: () => import('./orders/overview/orders-overview.component').then(m => m.OrdersOverviewComponent),
       },
       {
+        path: 'orders/create',
+        canActivate: [authGuard],
+        loadComponent: () => import('./orders/create/order-create.component').then(m => m.OrderCreateComponent),
+      },
+      {
         path: 'orders/:uuid',
         canActivate: [authGuard],
+        canDeactivate: [orderBuilderCanDeactivate],
         loadComponent: () => import('./orders/builder/order-builder.component').then(m => m.OrderBuilderComponent),
       },
       {
-        path: 'categories',
+        path: 'stock-sets',
         canActivate: [authGuard],
-        loadComponent: () => import('./categories/list/categories.component').then(m => m.CategoriesComponent),
+        loadComponent: () => import('./stock-sets/list/stock-set-list.component').then(m => m.StockSetListComponent),
       },
       {
-        path: 'categories/create',
+        path: 'stock-sets/create',
         canActivate: [authGuard],
-        loadComponent: () => import('./categories/builder/category-builder.component').then(m => m.CategoryBuilderComponent),
+        loadComponent: () => import('./stock-sets/builder/stock-set-builder.component').then(m => m.StockSetBuilderComponent),
       },
       {
-        path: 'categories/:uuid',
+        path: 'stock-sets/:uuid',
         canActivate: [authGuard],
-        loadComponent: () => import('./categories/builder/category-builder.component').then(m => m.CategoryBuilderComponent),
-      }
+        loadComponent: () => import('./stock-sets/builder/stock-set-builder.component').then(m => m.StockSetBuilderComponent),
+      },
     ]
   },
   {

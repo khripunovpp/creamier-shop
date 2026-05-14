@@ -180,7 +180,7 @@ export class NumberInputComponent
   value: string = '';
   onInputChange = output<string>();
   onKeydown = output();
-  placeholder = input('Enter text here');
+  placeholder = input('');
   name = input('');
   disable = input<boolean>(false);
   centred = input<boolean>(false);
@@ -211,7 +211,11 @@ export class NumberInputComponent
   };
 
   writeValue(value: string): void {
-    this._change(value);
+    // CVA contract: writeValue must NOT fire onChange — only sync internal state.
+    this.value = value ? removeAllNonMathSymbols(String(value)) : '';
+    if (this.input?.nativeElement) {
+      this.input.nativeElement.value = this.value;
+    }
   }
 
   registerOnChange(fn: any) {

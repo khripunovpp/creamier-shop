@@ -85,7 +85,7 @@ export class TextareaComponent
   rows = input<number>(5);
   @ViewChild('input', {static: true}) input: ElementRef<HTMLInputElement> | undefined;
   value: string = '';
-  placeholder = input('Enter text here');
+  placeholder = input('');
   readOnly = input<boolean>(false);
   maxlength = input<number | null>(null);
 
@@ -96,7 +96,8 @@ export class TextareaComponent
   };
 
   writeValue(value: string): void {
-    this.changeValue(value);
+    // CVA contract: writeValue must NOT fire onChange — only sync internal state.
+    this.value = String(value || '').trim();
   }
 
   registerOnChange(fn: any) {

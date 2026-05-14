@@ -46,7 +46,7 @@ import {FormValueControl} from '@angular/forms/signals';
 
       .mat-mdc-text-field-wrapper {
         border-radius: 12px;
-        background-color: #fff;
+        background-color: var(--control-bg);
       }
 
       .mdc-text-field__input {
@@ -69,7 +69,7 @@ import {FormValueControl} from '@angular/forms/signals';
     }
   `]
 })
-export class DatePickerComponent implements FormValueControl<string | null> {
-  value = model<string | null>(null);
+export class DatePickerComponent implements FormValueControl<Date | null> {
+  value = model<Date | null>(null);
   disabled = input(false);
 }

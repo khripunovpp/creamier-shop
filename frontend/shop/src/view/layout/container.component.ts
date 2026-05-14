@@ -29,7 +29,7 @@ import {Component, input} from '@angular/core';
         gap: 32px;
       }
 
-      @media (max-width:768px) {
+      @media (max-width: 768px) {
         .container {
           gap: 16px;
         }

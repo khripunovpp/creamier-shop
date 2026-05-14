@@ -59,7 +59,8 @@ import {FormValueControl} from '@angular/forms/signals';
         background-color: var(--control-bg);
         opacity: 0.2;
         cursor: pointer;
-        transition: all 0.2s ease-in-out;
+        transition: 0.2s ease-in-out;
+        transition-property: background-color, opacity, border-color;
         border: 1px solid transparent;
 
         &-inner {
@@ -76,7 +77,8 @@ import {FormValueControl} from '@angular/forms/signals';
 
       .cm-radio__hoverOnly .cm-radio__mark-inner {
         opacity: 0;
-        transition: all 0.2s ease-in-out;
+        transition: 0.2s ease-in-out;
+        transition-property: opacity;
       }
 
       @media (hover: hover) {

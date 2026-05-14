@@ -1,15 +1,51 @@
 @use "scss/buttons";
 
 :root {
-  --container-width: 1200px;
+  --container-width: 1360px;
+
+  /* Patissière design tokens — sourced from source/sweet-thing-v2.html */
+  --bg: #E8F0E4;
+  --bg2: #F4F8EF;
+  --cream: #F8F1DC;
+  --pink: #F2D4D2;
+  --mint: #B8D4B0;
+  --forest: #2D4A3A;
+  --text: #1F2A20;
+  --muted: #5F6E5A;
+  --line: rgba(31, 42, 32, 0.14);
+
+  --f-disp: 'Italiana', 'Times New Roman', serif;
+  --f-sans: 'Work Sans', system-ui, sans-serif;
+  --f-price: 'Quicksand', system-ui, sans-serif;
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
-  background-color: #f5f5f5;
+  font-family: var(--f-sans);
+  background-color: var(--bg);
+  color: var(--text);
   margin: 0;
 }
 
 *, *::before, *::after {
   box-sizing: border-box;
+}
+
+/* Constrain each section's inner content to --container-width while letting the
+   section itself span the full viewport (so background colors paint edge to edge).
+   Listed selectors are the direct content blocks inside each section. */
+.header__inner,
+.hero__top,
+.hero__photos,
+.product__head,
+.product__box,
+.ed__grid,
+.gallery__head,
+.reviews__head,
+.reviews__grid,
+.catering__grid,
+.footer__grid,
+.footer__bot {
+  max-width: var(--container-width);
+  margin-left: auto;
+  margin-right: auto;
 }

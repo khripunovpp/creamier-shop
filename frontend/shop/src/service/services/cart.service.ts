@@ -1,171 +1,126 @@
-import {inject, Injectable} from '@angular/core';
-import {CartItem} from '../../types/cart.type';
-import {Countable} from '../../types/countable';
-import {BehaviorSubject, map, take} from 'rxjs';
-import {ProductsService} from './products.service';
+import { inject, Injectable } from '@angular/core';
+import { BehaviorSubject, map } from 'rxjs';
+import { SetCartItem } from '../../types/set-cart-item.type';
+import { SetsService } from './sets.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+const STORAGE_KEY = 'cart';
+
+// A cart line is uniquely identified by (stock_set_rule_id + sorted flavor_ids).
+// Two boxes of the same rule with different flavor combos are separate lines.
+function lineKey(item: Pick<SetCartItem, 'stock_set_rule_id' | 'flavor_ids'>): string {
+  return item.stock_set_rule_id + ':' + item.flavor_ids.join(',');
+}
+
+@Injectable({ providedIn: 'root' })
 export class CartService {
+  private readonly _setsService = inject(SetsService);
+
+  private readonly _cart$ = new BehaviorSubject<SetCartItem[]>([]);
+
+  readonly cart$ = this._cart$.asObservable();
+  readonly count$ = this.cart$.pipe(map(c => c.reduce((s, l) => s + l.quantity, 0)));
+  readonly sum$   = this.cart$.pipe(map(c => c.reduce((s, l) => s + l.price * l.quantity, 0)));
+
   constructor() {
-    this.initializeCart();
+    // Re-hydrate whenever the catalog refreshes so display fields (price, name,
+    // count) follow whatever admin has changed since the cart was persisted.
+    this._setsService.sets$.subscribe(() => this._hydrateFromStorage());
   }
 
-  private _cartSubject = new BehaviorSubject<CartItem<Countable>[]>([]);
-  private _products$ = inject(ProductsService).getProducts$;
+  add(stock_set_rule_id: string, flavor_ids: string[], quantity = 1): void {
+    const lookup = this._setsService.findRuleById(stock_set_rule_id);
+    if (!lookup) return;
 
-  get sum$() {
-    return this.cart$.pipe(
-      map(cart => cart.reduce((sum, item) => sum + (item.item.price * item.quantity), 0)),
+    const sortedFlavors = [...flavor_ids].sort();
+    const next = this._cart$.value.slice();
+    const key = lineKey({ stock_set_rule_id, flavor_ids: sortedFlavors });
+    const idx = next.findIndex(l => lineKey(l) === key);
+
+    if (idx >= 0) {
+      next[idx] = { ...next[idx], quantity: next[idx].quantity + quantity };
+    } else {
+      next.push({
+        stock_set_rule_id,
+        flavor_ids: sortedFlavors,
+        quantity,
+        set_slug: lookup.set.slug,
+        set_name_ru: lookup.set.name_ru,
+        set_name_pt: lookup.set.name_pt,
+        count: lookup.rule.count,
+        price: lookup.rule.price,
+      });
+    }
+
+    this._emit(next);
+  }
+
+  setQuantity(line: SetCartItem, quantity: number): void {
+    if (quantity <= 0) return this.remove(line);
+    const next = this._cart$.value.map(l =>
+      lineKey(l) === lineKey(line) ? { ...l, quantity } : l
     );
+    this._emit(next);
   }
 
-  get count$() {
-    return this.cart$.pipe(
-      map(cart => cart.length),
-    )
-  };
-
-  private _cart: CartItem<Countable>[] = [];
-
-  get cart() {
-    return this._cart;
+  remove(line: SetCartItem): void {
+    this._emit(this._cart$.value.filter(l => lineKey(l) !== lineKey(line)));
   }
 
-  get cart$() {
-    return this._cartSubject.asObservable();
+  clear(): void {
+    this._emit([]);
   }
 
-  initializeCart() {
-    this._parseCart()
-      .subscribe(cart => {
-        this._cart = cart;
-        this._cartSubject.next(this._cart);
-      });
+  // Body for POST /api/orders/create. Drops display fields.
+  toOrderItems(): { stock_set_rule_id: string; flavor_ids: string[]; quantity: number }[] {
+    return this._cart$.value.map(({ stock_set_rule_id, flavor_ids, quantity }) =>
+      ({ stock_set_rule_id, flavor_ids, quantity }));
   }
 
-  addToCart(cartItem: CartItem<Countable>) {
-    const existingItem = this._cart
-      .find(ci => ci.item.id === cartItem.item.id);
-
-    if (!cartItem.item.available_quantity) return;
-
-    if (existingItem && (existingItem.quantity + cartItem.quantity) <= cartItem.item.available_quantity) {
-      this._cart = this._cart.map(ci =>
-        ci.item.id === cartItem.item.id ? {...ci, quantity: ci.quantity + cartItem.quantity} : ci
-      );
-    } else if (existingItem) {
-      this._cart = this._cart.map(ci =>
-        ci.item.id === cartItem.item.id ? {...ci, quantity: cartItem.item.available_quantity} : ci
-      );
-    } else {
-      this._cart = [...this._cart, cartItem];
-    }
-    this._emitCart();
+  private _emit(next: SetCartItem[]): void {
+    this._cart$.next(next);
+    this._persist(next);
   }
 
-  incrementCount(item: Countable) {
-    const existingItem = this._cart
-      .find(ci => ci.item.id === item.id);
-
-    if (!item.available_quantity) return;
-
-    if (existingItem && existingItem.quantity < item.available_quantity) {
-      this._cart = this._cart.map(ci =>
-        ci.item.id === item.id ? {...ci, quantity: ci.quantity + 1} : ci
-      );
-      this._emitCart();
-    } else if (!existingItem) {
-      this.addToCart({
-        item,
-        quantity: 1,
-      });
-    }
-  }
-
-  decrementCount(item: Countable) {
-    const existingItem = this._cart
-      .find(ci => ci.item.id === item.id);
-
-    if (!existingItem) return;
-
-    if (existingItem.quantity > item.available_quantity) {
-      this._cart = this._cart.map(ci =>
-        ci.item.id === item.id ? {...ci, quantity: item.available_quantity} : ci
-      );
-      this._emitCart();
-    } else if (existingItem.quantity > 1) {
-      this._cart = this._cart.map(ci =>
-        ci.item.id === item.id ? {...ci, quantity: ci.quantity - 1} : ci
-      );
-    } else {
-      this.removeFromCart(existingItem);
-    }
-    this._emitCart();
-  }
-
-  removeFromCart(item: CartItem<Countable>) {
-    const index = this._cart
-      .findIndex(ci => ci.item.id === item.item.id);
-
-    if (index !== -1) {
-      this._cart = this._cart.filter((_, i) => i !== index);
-      this._emitCart();
-    }
-  }
-
-  clearCart() {
-    this._cart = [];
-    this._emitCart();
-  }
-
-  private _emitCart() {
-    this._cartSubject.next(this._cart);
-    this._storeCart();
-  }
-
-  private _storeCart() {
+  private _persist(next: SetCartItem[]): void {
     try {
-      const cartData = JSON.stringify(this._cart.map(cartItem => ({
-        itemId: cartItem.item.id,
-        quantity: cartItem.quantity,
-      })));
-      localStorage.setItem('cart', cartData);
-    } catch (e) {
-      console.error('Failed to store cart in localStorage', e);
-    }
+      const wire = next.map(({ stock_set_rule_id, flavor_ids, quantity }) =>
+        ({ stock_set_rule_id, flavor_ids, quantity }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(wire));
+    } catch {}
   }
 
-  private _parseCart() {
-    return this._products$.pipe(
-      map(products => {
-        try {
-          const cartData = localStorage.getItem('cart');
-          if (!cartData) return [];
+  private _hydrateFromStorage(): void {
+    let raw: string | null = null;
+    try { raw = localStorage.getItem(STORAGE_KEY); } catch { return; }
+    if (!raw) return;
 
-          const parsed = JSON.parse(cartData);
+    let parsed: unknown;
+    try { parsed = JSON.parse(raw); } catch { return; }
+    if (!Array.isArray(parsed)) return;
 
-          if (Array.isArray(parsed)) {
-            return parsed.map(cartItem => {
-              const product = products.find(p => p.id === cartItem.itemId);
-              if (product?.available_quantity) {
-                const enoughStock = product.available_quantity >= cartItem.quantity;
-                return {
-                  item: product,
-                  quantity: enoughStock ? cartItem.quantity : product.available_quantity,
-                } as CartItem<Countable>;
-              }
-              return null;
-            }).filter((item): item is CartItem<Countable> => item !== null);
-          }
-          return [];
-        } catch (e) {
-          console.error('Failed to parse cart data', e);
-          return [];
-        }
-      }),
-      take(1),
-    );
+    const hydrated: SetCartItem[] = [];
+    for (const entry of parsed) {
+      if (
+        !entry || typeof entry !== 'object'
+        || typeof (entry as any).stock_set_rule_id !== 'string'
+        || !Array.isArray((entry as any).flavor_ids)
+        || typeof (entry as any).quantity !== 'number'
+      ) continue;
+
+      const lookup = this._setsService.findRuleById((entry as any).stock_set_rule_id);
+      if (!lookup) continue; // rule no longer exists — drop the line silently
+
+      hydrated.push({
+        stock_set_rule_id: (entry as any).stock_set_rule_id,
+        flavor_ids: [...(entry as any).flavor_ids].sort(),
+        quantity: Math.max(1, Math.floor((entry as any).quantity)),
+        set_slug: lookup.set.slug,
+        set_name_ru: lookup.set.name_ru,
+        set_name_pt: lookup.set.name_pt,
+        count: lookup.rule.count,
+        price: lookup.rule.price,
+      });
+    }
+    this._cart$.next(hydrated);
   }
 }

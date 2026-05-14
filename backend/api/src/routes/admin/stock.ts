@@ -1,5 +1,5 @@
 import {Hono} from "hono";
-import {zValidator} from '@hono/zod-validator'
+import {zValidator} from '@hono/zod-validator';
 import {Bindings, Variables} from "../../index";
 import {stockScheme, updateStockItemScheme} from "../../schemes/stock.scheme";
 
@@ -8,266 +8,169 @@ const stockRoutes = new Hono<{
   Variables: Variables;
 }>();
 
+const SELECT_FIELDS = '*';
+
 stockRoutes.get("/", async (c) => {
   const supabase = c.get("supabaseClient");
-
   if (!supabase) {
+    console.error("GET /api/admin/products: no supabase client in context");
     return c.json({error: "Failed to fetch products"}, 500);
   }
 
   const withArchived = c.req.query("withArchived") === "true";
-  const statuesToFetch = withArchived
-    ? ["active", "stopped", "archived"]
-    : ["active", "stopped"];
+  const statuses = withArchived ? ["active", "stopped", "archived"] : ["active", "stopped"];
 
   const {data, error} = await supabase.from("stock_items")
-    .select("*, category:categories(id, name)")
-    .in("status", statuesToFetch)
+    .select(SELECT_FIELDS)
+    .in("status", statuses)
     .order("status", {ascending: true})
+    .order("position", {ascending: true})
     .order("created_at", {ascending: false});
 
-  const stockItemsWithMovements = await Promise.all(data?.map(async (item) => {
-    const {data: movements} = await supabase.from("stock_movements")
-      .select("*")
-      .eq("stock_item_id", item.id)
-      .order("created_at", {ascending: false})
-      .limit(1)
-      .single();
-
-    return {
-      ...item,
-      quantity: movements?.remain || 0,
-    };
-  }) || []);
-
   if (error) {
+    console.error("GET /api/admin/products: stock_items query failed", error);
     return c.json({error: "Failed to fetch products"}, 500);
   }
 
-  return c.json(stockItemsWithMovements);
+  // Inventory quantity is still tracked via stock_movements (legacy).
+  // For made-to-order flavors this is typically 0; keep the join for back-compat.
+  const itemsWithQty = await Promise.all((data ?? []).map(async (item) => {
+    const {data: movement, error: moveErr} = await supabase.from("stock_movements")
+      .select("remain")
+      .eq("stock_item_id", item.id)
+      .order("created_at", {ascending: false})
+      .limit(1)
+      .maybeSingle();
+    if (moveErr) console.error("GET /api/admin/products: stock_movements query failed", {item_id: item.id, err: moveErr});
+    return {...item, quantity: movement?.remain ?? 0};
+  }));
+
+  return c.json(itemsWithQty);
 });
 
 stockRoutes.get("/:id", async (c) => {
   const supabase = c.get("supabaseClient");
-
-  if (!supabase) {
-    return c.json({error: "Failed to fetch product"}, 500);
-  }
+  if (!supabase) return c.json({error: "Failed to fetch product"}, 500);
 
   const {id} = c.req.param();
 
   const {data, error} = await supabase.from("stock_items")
-    .select("*")
+    .select(SELECT_FIELDS)
     .eq("id", id)
     .single();
 
-  if (error) {
-    return c.json({error: "Failed to fetch product"}, 500);
-  }
-
+  if (error) return c.json({error: "Failed to fetch product"}, 500);
   return c.json(data);
 });
 
-stockRoutes.post(
-  '/',
-  zValidator('json', stockScheme),
-  async (c) => {
-    const supabase = c.get("supabaseClient");
+stockRoutes.post('/', zValidator('json', stockScheme), async (c) => {
+  const supabase = c.get("supabaseClient");
+  if (!supabase) return c.json({error: "Failed to create product"}, 500);
 
-    if (!supabase) {
-      return c.json({error: "Failed to create product"}, 500);
-    }
+  const body = c.req.valid('json');
+  const {data, error} = await supabase.from("stock_items")
+    .insert({
+      name: body.name,
+      name_pt: body.name_pt,
+      detail_ru: body.detail_ru ?? null,
+      detail_pt: body.detail_pt ?? null,
+      tags_ru: body.tags_ru ?? null,
+      tags_pt: body.tags_pt ?? null,
+      photo_url: body.photo_url ?? null,
+      position: body.position,
+      price: body.price,
+      cost_price: body.cost_price,
+      status: body.status,
+      badge: body.badge ?? null,
+    })
+    .select("id")
+    .single();
 
-    const requestData = c.req.valid('json');
-    const {data, error} = await supabase.from("stock_items")
-      .insert({
-        name: requestData.name,
-        description: requestData.description,
-        price: requestData.price,
-        cost_price: requestData.cost_price,
-        is_service: requestData.is_service,
-        status: 'stopped',
-        category_id: requestData.category_id ?? null,
-        badge: requestData.badge || null,
-      })
-      .select("*")
-      .single();
-
-    if (error) {
-      console.error("Failed to create product", error);
-      return c.json({error: "Failed to create product"}, 500);
-    }
-
-    console.log("Product created", {id: data.id, adminId: c.get("user")?.id});
-    return c.json({
-      id: data.id,
-    }, 201);
+  if (error) {
+    console.error("Failed to create product", error);
+    return c.json({error: "Failed to create product"}, 500);
   }
-);
+  console.log("Product created", {id: data.id, adminId: c.get("user")?.id});
+  return c.json({id: data.id}, 201);
+});
 
-stockRoutes.put(
-  '/:id',
-  zValidator('json', updateStockItemScheme),
-  async (c) => {
-    const supabase = c.get("supabaseClient");
+stockRoutes.put('/:id', zValidator('json', updateStockItemScheme), async (c) => {
+  const supabase = c.get("supabaseClient");
+  if (!supabase) return c.json({error: "Failed to update product"}, 500);
 
-    if (!supabase) {
-      return c.json({error: "Failed to update product"}, 500);
-    }
+  const {id} = c.req.param();
+  const body = c.req.valid('json');
 
-    const {id} = c.req.param();
-    const requestData = c.req.valid('json');
+  // Only fields actually present in the request are sent to the DB; the rest stay untouched.
+  const {error} = await supabase.from("stock_items").update(body).eq('id', id);
 
-    const {error} = await supabase.from("stock_items")
-      .update({
-        name: requestData.name,
-        description: requestData.description,
-        price: requestData.price,
-        cost_price: requestData.cost_price,
-        category_id: requestData.category_id ?? null,
-        badge: requestData.badge || null,
-      })
-      .eq('id', id);
-
-    if (error) {
-      console.error("Failed to update product", error);
-      return c.json({error: "Failed to update product"}, 500);
-    }
-
-    console.log("Product updated", {id, adminId: c.get("user")?.id});
-    return c.json({message: "Product updated successfully"});
+  if (error) {
+    console.error("Failed to update product", error);
+    return c.json({error: "Failed to update product"}, 500);
   }
-);
+  console.log("Product updated", {id, adminId: c.get("user")?.id});
+  return c.json({message: "Product updated successfully"});
+});
 
 stockRoutes.post('/:id/archive', async (c) => {
   const supabase = c.get("supabaseClient");
-
-  if (!supabase) {
-    return c.json({error: "Failed to archive product"}, 500);
-  }
-
+  if (!supabase) return c.json({error: "Failed to archive product"}, 500);
   const {id} = c.req.param();
-
-  const {error} = await supabase.from("stock_items")
-    .update({
-      status: 'archived',
-    })
-    .eq('id', id);
-
-  if (error) {
-    console.error("Failed to archive product", error);
-    return c.json({error: "Failed to archive product"}, 500);
-  }
-
-  console.log("Product archived", {id, adminId: c.get("user")?.id});
+  const {error} = await supabase.from("stock_items").update({status: 'archived'}).eq('id', id);
+  if (error) return c.json({error: "Failed to archive product"}, 500);
   return c.json({message: "Product archived successfully"});
 });
 
 stockRoutes.post('/:id/activate', async (c) => {
   const supabase = c.get("supabaseClient");
-
-  if (!supabase) {
-    return c.json({error: "Failed to activate product"}, 500);
-  }
-
+  if (!supabase) return c.json({error: "Failed to activate product"}, 500);
   const {id} = c.req.param();
-
-  const {error} = await supabase.from("stock_items")
-    .update({status: 'active'})
-    .eq('id', id);
-
-  if (error) {
-    console.error("Failed to activate product", error);
-    return c.json({error: "Failed to activate product"}, 500);
-  }
-
-  console.log("Product activated", {id, adminId: c.get("user")?.id});
+  const {error} = await supabase.from("stock_items").update({status: 'active'}).eq('id', id);
+  if (error) return c.json({error: "Failed to activate product"}, 500);
   return c.json({message: "Product activated successfully"});
 });
 
 stockRoutes.post('/:id/deactivate', async (c) => {
   const supabase = c.get("supabaseClient");
-
-  if (!supabase) {
-    return c.json({error: "Failed to deactivate product"}, 500);
-  }
-
+  if (!supabase) return c.json({error: "Failed to deactivate product"}, 500);
   const {id} = c.req.param();
-
-  const {error} = await supabase.from("stock_items")
-    .update({status: 'stopped'})
-    .eq('id', id);
-
-  if (error) {
-    console.error("Failed to deactivate product", error);
-    return c.json({error: "Failed to deactivate product"}, 500);
-  }
-
-  console.log("Product deactivated", {id, adminId: c.get("user")?.id});
+  const {error} = await supabase.from("stock_items").update({status: 'stopped'}).eq('id', id);
+  if (error) return c.json({error: "Failed to deactivate product"}, 500);
   return c.json({message: "Product deactivated successfully"});
 });
 
 stockRoutes.post('/:id/move', async (c) => {
   const supabase = c.get("supabaseClient");
-
-  if (!supabase) {
-    return c.json({error: "Failed to move stock item"}, 500);
-  }
+  if (!supabase) return c.json({error: "Failed to move stock item"}, 500);
 
   const {id} = c.req.param();
   const {quantity, operation} = await c.req.json();
 
-  const {data: currentItem, error: fetchError} = await supabase.from("stock_items")
-    .select("id")
-    .eq('id', id)
-    .single();
+  const {data: current, error: fetchError} = await supabase.from("stock_items")
+    .select("id").eq('id', id).single();
+  if (fetchError) return c.json({error: "Failed to fetch product"}, 500);
+  if (!current) return c.json({error: "Product not found"}, 404);
 
-  if (fetchError) {
-    console.error("Failed to fetch product", fetchError);
-    return c.json({error: "Failed to fetch product"}, 500);
-  }
-  if (!currentItem) {
-    return c.json({error: "Product not found"}, 404);
-  }
-
-  let newQuantity = 0;
-  const {error: movementRecordDataError, data: movementRecordData} = await supabase.from("stock_movements")
-    .select("*")
+  const {data: lastMove} = await supabase.from("stock_movements")
+    .select("remain")
     .eq("stock_item_id", id)
     .order("created_at", {ascending: false})
-    .limit(1);
+    .limit(1)
+    .maybeSingle();
 
-  if (movementRecordDataError) {
-    console.error("Failed to fetch stock movement data", movementRecordDataError);
-    return c.json({error: "Failed to fetch stock movement data"}, 500);
-  }
+  let remain = lastMove?.remain ?? 0;
+  if (operation === 'add') remain = remain + Number(quantity);
+  else if (operation === 'remove') remain = Math.max(0, remain - Number(quantity));
+  else return c.json({error: "Invalid operation"}, 400);
 
-  if (movementRecordData && movementRecordData.length > 0) {
-    newQuantity = movementRecordData[0].remain;
-  }
+  const {error} = await supabase.from("stock_movements").insert({
+    stock_item_id: id,
+    quantity: Number(quantity),
+    operation,
+    remain,
+  });
+  if (error) return c.json({error: "Failed to move stock item"}, 500);
 
-  if (operation === 'add') {
-    newQuantity = newQuantity + quantity;
-  } else if (operation === 'remove') {
-    newQuantity = Math.max(0, newQuantity - quantity);
-  } else {
-    return c.json({error: "Invalid operation"}, 400);
-  }
-
-  const {error: updateError, data: insertedRow} = await supabase.from("stock_movements")
-    .insert({
-      stock_item_id: id,
-      quantity: quantity,
-      operation,
-      remain: newQuantity,
-    });
-
-  if (updateError) {
-    console.error("Failed to move stock item", updateError);
-    return c.json({error: "Failed to move stock item"}, 500);
-  }
-
-  console.log("Stock moved", {id, operation, quantity, adminId: c.get("user")?.id});
   return c.json({message: "Stock item moved successfully"});
 });
 

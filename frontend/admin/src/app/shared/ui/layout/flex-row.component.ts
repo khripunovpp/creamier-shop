@@ -88,7 +88,7 @@ import {NgClass, NgStyle} from '@angular/common';
     }
 
     .gap-row__equal {
-      align-items: stretch;
+      //align-items: stretch;
     }
 
     .gap-row__equal > * {

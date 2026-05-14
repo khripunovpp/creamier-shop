@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Patissière — Mint Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Quicksand:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ── Reset ─────────────────────────────────────────────────────────────────── */
+html, body { margin: 0; padding: 0; background: #E8F0E4; }
+body        { font-family: 'Work Sans', system-ui, sans-serif; }
+*           { box-sizing: border-box; }
+button      { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; outline: none; }
+
+/* ── Переменные ────────────────────────────────────────────────────────────── */
+:root {
+  --bg:      #E8F0E4;
+  --bg2:     #F4F8EF;
+  --cream:   #F8F1DC;
+  --pink:    #F2D4D2;
+  --mint:    #B8D4B0;
+  --text:    #1F2A20;
+  --muted:   #5F6E5A;
+  --line:    rgba(31,42,32,0.14);
+  --forest:  #2D4A3A;
+  --f-disp:  'Italiana', 'Times New Roman', serif;
+  --f-sans:  'Work Sans', system-ui, sans-serif;
+  --f-price: 'Quicksand', system-ui, sans-serif;
+}
+
+/* ── Обёртка ───────────────────────────────────────────────────────────────── */
+.site { background: var(--bg); color: var(--text); font-family: var(--f-sans); max-width: 1440px; margin: 0 auto; width: 100%; }
+
+/* ── Цены (Quicksand) ──────────────────────────────────────────────────────── */
+.price-num        { font-family: var(--f-price); font-weight: 700; color: var(--forest); line-height: 1; }
+.price-product    { font-size: 52px; }
+.price-product-eu { font-size: 26px; }
+.price-cart-item  { font-size: 20px; margin-left: auto; }
+.price-cart-total { font-size: 44px; }
+
+/* ── Реальные фото (общий класс) ────────────────────────────────────────────── */
+.fc__photo        { position: absolute; inset: 0; width: 100%; height: 100%;
+                    object-fit: cover; display: block; }
+.hero-photo-wrap  { position: relative; overflow: hidden; width: 100%; height: 100%; }
+.hero-photo-wrap img { position: absolute; inset: 0; width: 100%; height: 100%;
+                    object-fit: cover; object-position: center; display: block; }
+.hero-img--tart-slice { object-position: center 62% !important; }
+.hero-img--choux      { object-fit: cover !important; object-position: center; transform: scale(1.18); }
+
+/* ── Photo slot ────────────────────────────────────────────────────────────── */
+.photo-slot       { width: 100%; height: 100%; position: relative; overflow: hidden;
+                    display: flex; align-items: center; justify-content: center;
+                    background: var(--slot-bg, #EFE8DD); }
+.photo-slot__svg  { position: absolute; inset: 0; }
+.photo-slot__lbl  { position: relative; font-size: 11px; letter-spacing: .15em;
+                    text-transform: uppercase; text-align: center; padding: 0 12px; line-height: 1.6;
+                    color: var(--slot-fg, #6B5E48); }
+
+/* ── Хедер ─────────────────────────────────────────────────────────────────── */
+.header           { padding: 24px 64px; display: flex; flex-wrap: wrap; align-items: center;
+                    gap: 40px; background: var(--bg); }
+.header__logo     { font-family: var(--f-disp); font-size: 32px; color: var(--forest);
+                    line-height: 1; letter-spacing: .02em; flex-shrink: 0; }
+.header__nav      { flex: 1; display: flex; justify-content: center; gap: 48px; }
+.header__nav-a    { font-size: 18px; font-weight: 500; letter-spacing: .01em; color: var(--text);
+                    text-decoration: none; cursor: pointer; padding-bottom: 3px;
+                    border-bottom: 1px solid transparent; transition: border-color .2s; white-space: nowrap; }
+.header__nav-a:hover { border-bottom-color: var(--forest); }
+.header__right    { display: flex; gap: 20px; align-items: center; flex-shrink: 0; }
+.header__langs    { display: flex; gap: 2px; align-items: center; }
+.header__lang-dot { color: var(--muted); font-size: 14px; margin: 0 2px; }
+.header__lang-btn { background: none; border: none; padding: 4px 8px; color: var(--muted);
+                    text-transform: uppercase; font-weight: 400; font-size: 15px; letter-spacing: .1em; }
+.header__lang-btn--on { color: var(--forest); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.header__cart     { position: relative; display: flex; align-items: center; gap: 10px;
+                    padding: 12px 22px; background: var(--cream); border: 1px solid var(--line);
+                    color: var(--text); font-size: 15px; font-weight: 500; letter-spacing: .04em; }
+.header__cart-badge { position: absolute; top: -8px; right: -8px; width: 20px; height: 20px;
+                    background: var(--forest); color: var(--cream); border-radius: 999px;
+                    font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+@media (max-width: 767px) {
+  .header           { padding: 16px 20px; gap: 16px; }
+  .header__logo     { font-size: 24px; }
+  .header__nav      { order: 3; width: 100%; flex: none; justify-content: flex-start;
+                      gap: 20px; overflow-x: auto; padding-bottom: 4px; }
+  .header__nav-a    { font-size: 14px; }
+}
+
+/* ── Герой ─────────────────────────────────────────────────────────────────── */
+.hero             { padding: 20px 64px 100px; background: var(--bg); }
+.hero__top        { display: grid; grid-template-columns: 1fr .85fr; gap: 48px; margin-bottom: 32px; }
+.hero__h1         { font-family: var(--f-disp); font-size: 132px; font-weight: 400;
+                    line-height: .92; color: var(--text); margin: 0; letter-spacing: 0; }
+.hero__intro      { align-self: end; padding-bottom: 16px; }
+.hero__line       { width: 60px; height: 1px; background: var(--text); margin-bottom: 20px; }
+.hero__desc       { font-size: 16px; color: var(--text); line-height: 1.65; margin: 0; }
+.hero__cta        { display: flex; gap: 8px; margin-top: 28px; align-items: center; }
+.hero__dash       { font-family: var(--f-disp); font-size: 32px; color: var(--forest); font-style: italic; }
+.hero__cta-btn    { padding: 14px 30px; background: var(--forest); color: var(--cream); border: none;
+                    font-size: 13px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; }
+.hero__photos     { display: grid; grid-template-columns: 1.2fr .8fr 1fr; gap: 16px; height: 460px; }
+.hero__main       { position: relative; }
+.hero__lbl        { position: absolute; left: 20px; bottom: 20px; background: var(--cream);
+                    padding: 10px 16px; font-family: var(--f-disp); font-style: italic;
+                    font-size: 18px; color: var(--forest); }
+.hero__mid        { display: grid; grid-template-rows: 1fr 1fr; gap: 16px; }
+.hero__count      { background: var(--forest); color: var(--cream); padding: 24px;
+                    display: flex; flex-direction: column; justify-content: space-between; }
+.hero__count-tag  { font-family: var(--f-disp); font-size: 14px; font-style: italic; letter-spacing: .1em; }
+.hero__count-num  { font-family: var(--f-disp); font-size: 44px; line-height: .95; margin-top: 12px; }
+.hero__count-unit { font-size: 16px; font-family: var(--f-sans); letter-spacing: .18em; text-transform: uppercase; }
+.hero__side       {}
+@media (max-width: 1023px) {
+  .hero__h1     { font-size: 80px; }
+  .hero__photos { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 767px) {
+  .hero         { padding: 24px 20px 60px; }
+  .hero__top    { grid-template-columns: 1fr; gap: 24px; margin-bottom: 24px; }
+  .hero__h1     { font-size: 52px; }
+  .hero__desc   { font-size: 14px; }
+  .hero__photos { grid-template-columns: 1fr; height: auto; }
+  .hero__side   { height: 220px; }
+}
+
+/* ── Карточка вкуса ─────────────────────────────────────────────────────────── */
+.fc               { display: block; width: 100%; padding: 0; background: transparent; border: none;
+                    color: var(--text); text-align: left; transition: opacity .2s; }
+.fc--dis          { opacity: .45; cursor: default; }
+.fc__thumb        { position: relative; aspect-ratio: 1/1; margin-bottom: 14px;
+                    background: var(--card-bg, #EFE8DD); overflow: hidden; }
+.fc__num          { position: absolute; top: 12px; left: 12px; font-family: var(--f-sans);
+                    font-size: 10px; font-weight: 600; letter-spacing: .18em; color: var(--forest);
+                    background: var(--bg2); padding: 5px 9px; text-transform: uppercase; }
+.fc__sel-ring     { position: absolute; inset: 0; border: 2px solid var(--forest);
+                    display: flex; align-items: center; justify-content: center; }
+.fc__check        { width: 48px; height: 48px; border-radius: 999px; background: var(--forest);
+                    color: var(--cream); display: flex; align-items: center; justify-content: center; }
+.fc__title        { font-family: var(--f-disp); font-size: 26px; line-height: 1.1; margin-bottom: 6px; }
+.fc__detail       { font-size: 13px; color: var(--muted); line-height: 1.55; }
+.fc__tags         { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.fc__tag          { font-size: 11px; font-weight: 500; color: var(--forest);
+                    padding: 3px 9px; background: var(--bg2); letter-spacing: .04em; }
+
+/* ── Продукт / Карусель ─────────────────────────────────────────────────────── */
+.product          { background: var(--bg); padding: 100px 64px; }
+.product__head    { display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+                    margin-bottom: 64px; align-items: end; }
+.product__chapter { font-size: 12px; font-weight: 600; letter-spacing: .22em;
+                    text-transform: uppercase; color: var(--forest); margin-bottom: 24px; }
+.product__title   { font-family: var(--f-disp); font-size: 96px; font-weight: 400;
+                    line-height: .95; color: var(--text); margin: 0; }
+.product__desc    { font-size: 16px; color: var(--text); line-height: 1.7; margin: 0; max-width: 480px; }
+.product__box     { border: 1px solid var(--line); }
+.product__bhead   { display: flex; justify-content: space-between; align-items: center;
+                    padding: 20px 32px; border-bottom: 1px solid var(--line); }
+.product__btitle  { font-family: var(--f-disp); font-style: italic; font-size: 24px; color: var(--forest); }
+.product__nav     { display: flex; gap: 10px; align-items: center; }
+.product__nbtn    { width: 44px; height: 44px; border: 1px solid var(--line);
+                    background: transparent; color: var(--forest); font-family: var(--f-disp);
+                    font-size: 22px; display: flex; align-items: center; justify-content: center; }
+.product__nbtn--next { border-color: var(--forest); background: var(--forest); color: var(--cream); }
+.carousel-wrap    { padding: 32px 14px 24px; }
+.carousel-ov      { overflow: hidden; }
+.carousel-track   { display: flex; }
+.carousel-slot    { flex-shrink: 0; padding: 0 14px; }
+/* Панель заказа */
+.order-panel      { background: var(--cream); border-top: 1px solid var(--line);
+                    padding: 40px 48px; display: grid;
+                    grid-template-columns: auto 1fr auto; gap: 40px; align-items: center; }
+.order-controls   { display: flex; gap: 28px; flex-wrap: wrap; }
+.order-grp-lbl    { font-size: 11px; font-weight: 600; letter-spacing: .18em;
+                    text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.order-size-btns  { display: flex; gap: 6px; }
+.order-size-btn   { width: 48px; height: 48px; border: 1px solid var(--line);
+                    background: transparent; color: var(--text);
+                    font-family: var(--f-price); font-size: 20px; font-weight: 600; }
+.order-size-btn--on { border-color: var(--forest); background: var(--forest); color: var(--cream); }
+.order-mode-btns  { display: flex; border: 1px solid var(--line); }
+.order-mode-btn   { padding: 14px 22px; border: none; background: transparent;
+                    color: var(--text); font-size: 13px; font-weight: 500; }
+.order-mode-btn--on { background: var(--forest); color: var(--cream); }
+.order-qty-wrap   { display: flex; border: 1px solid var(--line); align-items: center; height: 48px; }
+.order-qty-btn    { width: 40px; height: 100%; background: none; border: none;
+                    color: var(--muted); font-size: 20px; }
+.order-qty-num    { width: 36px; text-align: center; font-family: var(--f-price);
+                    font-size: 22px; font-weight: 600; color: var(--text); }
+.order-status     { font-size: 13px; color: var(--muted); line-height: 1.6;
+                    justify-self: center; max-width: 200px; text-align: center; }
+.order-price-area { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+.order-add-btn    { padding: 14px 32px; background: transparent; color: var(--muted);
+                    border: 1px solid var(--forest); font-size: 12px; font-weight: 600;
+                    letter-spacing: .12em; text-transform: uppercase; cursor: default; }
+.order-add-btn--on { background: var(--forest); color: var(--cream); cursor: pointer; }
+@media (max-width: 1023px) {
+  .product__title { font-size: 72px; }
+}
+@media (max-width: 767px) {
+  .product      { padding: 60px 20px; }
+  .product__head { grid-template-columns: 1fr; gap: 16px; margin-bottom: 32px; }
+  .product__title { font-size: 52px; }
+  .order-panel  { grid-template-columns: 1fr; gap: 20px; padding: 24px 20px; }
+  .order-status { justify-self: start; }
+  .order-price-area { align-items: flex-start; }
+}
+
+/* ── Редакционный блок ──────────────────────────────────────────────────────── */
+.ed             { background: var(--forest); color: var(--cream); padding: 120px 64px; }
+.ed__grid       { display: grid; grid-template-columns: .9fr 1.2fr; gap: 80px; align-items: center; }
+.ed__eyebrow    { font-size: 12px; font-weight: 600; letter-spacing: .22em;
+                  text-transform: uppercase; opacity: .7; margin-bottom: 24px; }
+.ed__title      { font-family: var(--f-disp); font-size: 80px; font-weight: 400;
+                  line-height: .95; margin: 0; color: var(--cream); }
+.ed__quote      { font-family: var(--f-disp); font-style: italic; font-size: 28px;
+                  line-height: 1.45; margin: 0; opacity: .95; }
+.ed__attr       { margin-top: 32px; font-size: 13px; letter-spacing: .18em;
+                  text-transform: uppercase; opacity: .7; }
+@media (max-width: 1023px) {
+  .ed__title  { font-size: 64px; }
+  .ed__quote  { font-size: 22px; }
+}
+@media (max-width: 767px) {
+  .ed         { padding: 64px 20px; }
+  .ed__grid   { grid-template-columns: 1fr; gap: 32px; }
+  .ed__title  { font-size: 48px; }
+  .ed__quote  { font-size: 20px; }
+}
+
+/* ── Отзывы ─────────────────────────────────────────────────────────────────── */
+.reviews        { background: var(--bg); padding: 56px 64px 120px; }
+.reviews__head  { display: flex; justify-content: space-between; align-items: flex-end;
+                  margin-bottom: 56px; gap: 16px; flex-wrap: wrap; }
+.reviews__eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .22em;
+                  text-transform: uppercase; color: var(--forest); margin-bottom: 20px; }
+.reviews__title { font-family: var(--f-disp); font-size: 80px; font-weight: 400;
+                  line-height: .95; color: var(--text); margin: 0; }
+.reviews__loc   { font-family: var(--f-disp); font-style: italic; font-size: 20px;
+                  color: var(--muted); padding-bottom: 8px; }
+.reviews__grid  { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+.rcard          { padding: 48px 40px; display: flex; flex-direction: column;
+                  justify-content: space-between; min-height: 340px; background: var(--cream); }
+.rcard--dark    { background: var(--forest); }
+.rcard__mark    { font-family: var(--f-disp); font-size: 72px; color: var(--forest);
+                  line-height: .7; margin-bottom: 20px; opacity: .25; }
+.rcard--dark .rcard__mark { color: var(--cream); }
+.rcard__text    { font-family: var(--f-disp); font-style: italic; font-size: 20px;
+                  line-height: 1.6; color: var(--text); margin: 0; }
+.rcard--dark .rcard__text { color: var(--cream); }
+.rcard__foot    { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
+.rcard--dark .rcard__foot { border-top-color: rgba(248,241,220,.2); }
+.rcard__name    { font-size: 14px; font-weight: 600; color: var(--text); }
+.rcard--dark .rcard__name { color: var(--cream); }
+.rcard__detail  { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: .04em; }
+.rcard--dark .rcard__detail { color: rgba(248,241,220,.55); }
+@media (max-width: 1023px) {
+  .reviews__title { font-size: 64px; }
+  .reviews__grid  { grid-template-columns: 1fr 1fr; }
+  .reviews__loc   { display: none; }
+}
+@media (max-width: 767px) {
+  .reviews        { padding: 48px 20px 64px; }
+  .reviews__head  { margin-bottom: 32px; }
+  .reviews__title { font-size: 48px; }
+  .reviews__grid  { grid-template-columns: 1fr; gap: 12px; }
+  .rcard          { padding: 32px 24px; min-height: auto; }
+  .rcard__text    { font-size: 17px; }
+}
+
+/* ── Кейтеринг ──────────────────────────────────────────────────────────────── */
+.catering       { background: var(--forest); color: var(--cream); padding: 120px 64px; }
+.catering__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.catering__title { font-family: var(--f-disp); font-size: 96px; font-weight: 400;
+                   line-height: .95; color: var(--cream); margin: 0; }
+.catering__desc  { font-size: 17px; color: var(--cream); line-height: 1.75;
+                   margin: 0 0 40px; opacity: .88; }
+.catering__btn   { padding: 16px 36px; background: transparent;
+                   border: 1px solid var(--cream); color: var(--cream);
+                   font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+@media (max-width: 1023px) {
+  .catering__title { font-size: 72px; }
+  .catering__desc  { font-size: 15px; }
+}
+@media (max-width: 767px) {
+  .catering        { padding: 64px 20px; }
+  .catering__grid  { grid-template-columns: 1fr; gap: 32px; }
+  .catering__title { font-size: 60px; }
+}
+
+/* ── Футер ──────────────────────────────────────────────────────────────────── */
+.footer         { background: var(--bg2); padding: 80px 64px 32px; }
+.footer__grid   { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr;
+                  gap: 48px; margin-bottom: 56px; }
+.footer__logo   { font-family: var(--f-disp); font-size: 48px; color: var(--forest); line-height: 1; }
+.footer__desc   { font-size: 14px; color: var(--muted); line-height: 1.7; margin-top: 20px; max-width: 300px; }
+.footer__col-h  { font-size: 11px; font-weight: 600; letter-spacing: .18em;
+                  text-transform: uppercase; color: var(--forest); margin-bottom: 16px; }
+.footer__col-i  { font-size: 14px; color: var(--text); line-height: 1.9; }
+.footer__bot    { padding-top: 24px; border-top: 1px solid var(--line);
+                  display: flex; flex-wrap: wrap; justify-content: space-between;
+                  gap: 8px; font-size: 12px; color: var(--muted); }
+.footer__tag    { font-family: var(--f-disp); font-style: italic; font-size: 16px; color: var(--forest); }
+@media (max-width: 1023px) {
+  .footer__grid { grid-template-columns: 1fr 1fr 1fr; }
+}
+@media (max-width: 767px) {
+  .footer       { padding: 48px 20px 24px; }
+  .footer__grid { grid-template-columns: 1fr 1fr; gap: 24px 16px; }
+  .footer__logo-col { grid-column: 1 / -1; }
+  .footer__logo { font-size: 36px; }
+  .footer__desc { margin-top: 16px; }
+}
+
+/* ── Корзина ────────────────────────────────────────────────────────────────── */
+.cart-overlay   { position: fixed; inset: 0; z-index: 200; display: flex; }
+.cart-back      { flex: 1; background: rgba(31,42,32,.38); }
+.cart-panel     { width: 420px; background: var(--bg2); display: flex;
+                  flex-direction: column; box-shadow: -6px 0 32px rgba(31,42,32,.18); }
+.cart-hd        { padding: 24px 28px; border-bottom: 1px solid var(--line);
+                  display: flex; justify-content: space-between; align-items: center;
+                  background: var(--cream); flex-shrink: 0; }
+.cart-hd__title { font-family: var(--f-disp); font-size: 28px; color: var(--forest); }
+.cart-hd__close { background: none; border: none; color: var(--muted); font-size: 20px; line-height: 1; }
+.cart-body      { flex: 1; overflow-y: auto; padding: 20px 22px; }
+.cart-empty     { text-align: center; padding-top: 80px; }
+.cart-empty__ic { font-family: var(--f-disp); font-style: italic; font-size: 40px;
+                  color: var(--muted); margin-bottom: 12px; }
+.cart-empty__tx { font-size: 14px; color: var(--muted); }
+.cart-ft        { padding: 22px 28px; border-top: 1px solid var(--line);
+                  background: var(--cream); flex-shrink: 0; }
+.cart-total-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+.cart-total-lbl { font-size: 11px; font-weight: 600; text-transform: uppercase;
+                  letter-spacing: .18em; color: var(--muted); }
+.cart-checkout-btn { width: 100%; padding: 16px; background: var(--forest); color: var(--cream);
+                  border: none; font-size: 12px; font-weight: 600;
+                  letter-spacing: .14em; text-transform: uppercase; }
+.cart-group     { margin-bottom: 16px; }
+.cart-section-label { font-size: 13px; font-weight: 700; letter-spacing: .18em;
+                  text-transform: uppercase; color: var(--forest); margin-bottom: 14px; padding-left: 2px; }
+.cart-item      { background: var(--bg2); border: 1px solid var(--line);
+                  padding: 16px 18px; margin-bottom: 10px; }
+.cart-flavor-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.cart-flavor-name { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.3; }
+.cart-flavor-pcs  { font-size: 12px; color: var(--muted); }
+.cart-item-footer { display: flex; align-items: center; gap: 10px;
+                  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.cart-qty-wrap  { display: inline-flex; border: 1px solid var(--line); align-items: center; }
+.cart-qty-btn   { width: 30px; height: 30px; background: none; border: none; color: var(--text); font-size: 16px; }
+.cart-qty-num   { width: 24px; text-align: center; font-family: var(--f-price);
+                  font-size: 18px; font-weight: 600; color: var(--text); }
+.cart-qty-label { flex: 1; font-size: 12px; color: var(--muted); }
+.cart-remove-btn { background: none; border: none; color: var(--muted); font-size: 16px; padding: 4px 0 4px 8px; line-height: 1; }
+
+/* ── MiniThumb ──────────────────────────────────────────────────────────────── */
+.mini-thumb      { width: 48px; height: 48px; flex-shrink: 0; background: var(--thumb-bg, #EFE8DD);
+                   position: relative; overflow: hidden; }
+.mini-thumb__svg { position: absolute; inset: 0; }
+
+/* ── Checkout misc ──────────────────────────────────────────────────────────── */
+.co-dlv-section  { margin-bottom: 12px; }
+.co-field--lg    { margin-bottom: 28px; }
+
+/* ── Оформление заказа ──────────────────────────────────────────────────────── */
+.co-overlay     { position: fixed; inset: 0; z-index: 300;
+                  display: flex; align-items: center; justify-content: center; padding: 24px; }
+.co-back        { position: absolute; inset: 0; background: rgba(31,42,32,.5); }
+.co-modal       { position: relative; background: var(--cream); width: 520px;
+                  max-width: 100%; max-height: 92vh; overflow-y: auto;
+                  padding: 44px 48px; box-shadow: 0 12px 48px rgba(31,42,32,.22); }
+.co-hd          { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+.co-title       { font-family: var(--f-disp); font-size: 40px; color: var(--forest); line-height: 1; }
+.co-close       { background: none; border: none; color: var(--muted); font-size: 20px; }
+.co-summary     { border: 1px solid var(--line); padding: 16px 18px; margin-bottom: 28px; }
+.co-sum-row     { display: flex; justify-content: space-between; align-items: baseline;
+                  margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.co-sum-kind    { font-size: 10px; font-weight: 600; text-transform: uppercase;
+                  letter-spacing: .12em; color: var(--muted); margin-bottom: 2px; }
+.co-sum-flavor  { font-size: 13px; color: var(--text); }
+.co-sum-price   { font-family: var(--f-price); font-weight: 500; font-size: 18px;
+                  color: var(--forest); margin-left: 16px; }
+.co-sum-total-row { display: flex; justify-content: space-between; padding-top: 4px; }
+.co-sum-total-lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.co-sum-total-p { font-family: var(--f-price); font-weight: 500; font-size: 22px; color: var(--forest); }
+.co-field       { margin-bottom: 18px; }
+.co-label       { display: block; font-size: 11px; font-weight: 600; letter-spacing: .16em;
+                  text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.co-input       { width: 100%; padding: 12px 14px; border: 1px solid var(--line);
+                  font-size: 14px; color: var(--text); background: var(--bg2); }
+.co-methods     { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.co-method-btn  { padding: 7px 14px; border: 1px solid var(--line); background: transparent;
+                  color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .06em; }
+.co-method-btn--on { border-color: var(--forest); background: var(--forest); color: var(--cream); }
+.co-date-btn    { width: 100%; padding: 12px 14px; border: 1px solid var(--line);
+                  background: var(--bg2); text-align: left; display: flex;
+                  justify-content: space-between; align-items: center; font-size: 14px; }
+.co-date-btn--set   { border-color: var(--forest); font-weight: 600; color: var(--text); }
+.co-date-btn--unset { color: var(--muted); font-weight: 400; }
+.co-date-arr    { font-size: 14px; opacity: .5; transition: transform .2s; display: inline-block; }
+.co-date-arr--open { transform: rotate(180deg); }
+.co-cal         { background: var(--bg2); border: 1px solid var(--line); border-top: none; padding: 20px; }
+.co-cal-nav     { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.co-cal-btn     { width: 32px; height: 32px; border: 1px solid var(--line); background: none;
+                  font-size: 16px; color: var(--forest); display: flex; align-items: center; justify-content: center; }
+.co-cal-month   { font-family: var(--f-disp); font-size: 20px; color: var(--forest); }
+.co-cal-grid    { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 6px; }
+.co-cal-dname   { text-align: center; font-size: 11px; font-weight: 600;
+                  letter-spacing: .08em; color: var(--muted); padding-bottom: 4px; }
+.co-cal-day     { padding: 7px 0; border: none; background: transparent;
+                  font-size: 13px; color: var(--text); transition: all .12s; }
+.co-cal-day--dis  { color: var(--line); cursor: default; }
+.co-cal-day--sel  { background: var(--forest); color: var(--cream); font-weight: 700; }
+.co-slots       { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.co-slots-lbl   { font-size: 11px; font-weight: 600; letter-spacing: .16em;
+                  text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.co-slot-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.co-slot-btn    { padding: 11px 8px; border: 1px solid var(--line); background: transparent;
+                  color: var(--text); font-size: 13px; font-weight: 600; transition: all .15s; }
+.co-slot-btn--on { border-color: var(--forest); background: var(--forest); color: var(--cream); }
+.co-dlv-btns    { display: flex; border: 1px solid var(--line); margin-bottom: 12px; }
+.co-dlv-btn     { flex: 1; padding: 13px 16px; border: none; background: transparent;
+                  color: var(--muted); font-size: 13px; font-weight: 600; }
+.co-dlv-btn:first-child { border-right: 1px solid var(--line); }
+.co-dlv-btn--on { background: var(--forest); color: var(--cream); }
+.co-info        { margin-bottom: 18px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; }
+.co-info--pickup   { background: #EAF4EC; border: 1px solid #9CC0A0; }
+.co-info--delivery { background: #FBF8E8; border: 1px solid #D4C870; }
+.co-info-ic     { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.co-info-tx     { font-size: 13px; line-height: 1.6; }
+.co-info-tx--p  { color: #2D5C38; }
+.co-info-tx--d  { color: #6B5F20; }
+.co-submit      { width: 100%; padding: 15px; border: none; font-size: 12px;
+                  font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+.co-submit--on  { background: var(--forest); color: var(--cream); cursor: pointer; }
+.co-submit--off { background: rgba(31,42,32,.08); color: var(--muted); cursor: default; }
+.co-hint        { font-size: 12px; color: var(--muted); text-align: center; margin-top: 10px; }
+.co-ok          { text-align: center; padding: 32px 0; }
+.co-ok__ring    { width: 64px; height: 64px; border: 2px solid var(--forest);
+                  display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
+.co-ok__title   { font-family: var(--f-disp); font-size: 56px; color: var(--forest); line-height: 1; margin-bottom: 14px; }
+.co-ok__date    { display: inline-flex; gap: 8px; align-items: center;
+                  background: var(--mint); padding: 10px 20px; margin-bottom: 16px; }
+.co-ok__date-tx { font-size: 14px; font-weight: 600; color: var(--forest); }
+.co-ok__msg     { font-size: 15px; color: var(--muted); line-height: 1.7; }
+.co-ok__btn     { margin-top: 32px; padding: 14px 40px; background: var(--forest);
+                  color: var(--cream); border: none; font-size: 12px; font-weight: 600;
+                  letter-spacing: .14em; text-transform: uppercase; }
+
+@keyframes carouselFadeIn  { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes gallerySlideFwd { from { transform: translateX(0); }    to { transform: translateX(-50%); } }
+@keyframes gallerySlideRev { from { transform: translateX(-50%); } to { transform: translateX(0); }    }
+
+/* ── Галерея изделий ────────────────────────────────────────────────────────── */
+.gallery         { background: var(--bg2); padding: 80px 0 100px; overflow: hidden; }
+.gallery__head   { padding: 0 64px; margin-bottom: 48px; }
+.gallery__eyebrow{ font-size: 12px; font-weight: 600; letter-spacing: .22em;
+                   text-transform: uppercase; color: var(--forest); margin-bottom: 20px; }
+.gallery__title  { font-family: var(--f-disp); font-size: 80px; font-weight: 400;
+                   line-height: .95; color: var(--text); margin: 0; }
+.gallery__rows   { display: flex; flex-direction: column; gap: 12px; }
+.gallery__row    { display: flex; gap: 12px; width: max-content; will-change: transform; }
+.gallery__row--fwd { animation: gallerySlideFwd 50s linear infinite; }
+.gallery__row--rev { animation: gallerySlideRev 55s linear infinite; }
+.gallery__rows:hover .gallery__row { animation-play-state: paused; }
+.gallery__item   { width: 260px; height: 320px; flex-shrink: 0; overflow: hidden; }
+.gallery__item img { width: 100%; height: 100%; object-fit: cover; display: block;
+                   transition: transform .5s ease; }
+.gallery__item:hover img { transform: scale(1.06); }
+@media (max-width: 1023px) {
+  .gallery__title { font-size: 64px; }
+}
+@media (max-width: 767px) {
+  .gallery        { padding: 48px 0 64px; }
+  .gallery__head  { padding: 0 20px; margin-bottom: 28px; }
+  .gallery__title { font-size: 48px; }
+  .gallery__item  { width: 200px; height: 250px; }
+}
+
+/* ── Floating cart button ───────────────────────────────────────────────────── */
+.cart-fab        { position: fixed; bottom: 32px; right: 32px; z-index: 150;
+                   width: 60px; height: 60px; background: var(--forest); color: var(--cream);
+                   border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+                   box-shadow: 0 4px 20px rgba(31,42,32,.38);
+                   transition: transform .2s ease, box-shadow .2s ease; }
+.cart-fab:hover  { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(31,42,32,.48); }
+.cart-fab__badge { position: absolute; top: -7px; right: -7px; width: 22px; height: 22px;
+                   background: var(--cream); color: var(--forest); border-radius: 999px;
+                   font-size: 11px; font-weight: 700;
+                   display: flex; align-items: center; justify-content: center;
+                   border: 1.5px solid var(--forest); }
+@media (max-width: 767px) {
+  .cart-fab      { bottom: 20px; right: 20px; width: 52px; height: 52px; }
+}
+
+/* ── Toast-уведомление ──────────────────────────────────────────────────────── */
+.toast          { position: fixed; bottom: 40px; left: 50%;
+                  transform: translateX(-50%) translateY(14px);
+                  background: var(--cream); color: var(--forest);
+                  border: 1.5px solid var(--forest);
+                  box-shadow: 0 4px 24px rgba(31,42,32,.28);
+                  padding: 13px 28px; font-size: 14px; font-weight: 600;
+                  letter-spacing: .06em; opacity: 0; pointer-events: none;
+                  transition: opacity .22s ease, transform .22s ease;
+                  z-index: 600; white-space: nowrap; }
+.toast--show    { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+// ── Данные ────────────────────────────────────────────────────────────────────
+
+const TARTLET_FLAVORS = [
+  { id:"t-sb", photo:"фото/IMG_0284.JPG", ru:"Клубника с фисташкой", pt:"Morango com pistácio",
+    detail:{ ru:"Фисташковый крем, свежая клубника, хрустящее пралине, штройзель", pt:"Creme de pistácio, morango fresco, praliné crocante, crumble" },
+    tags:{ ru:["фисташка","клубника","пралине"], pt:["pistácio","morango","praliné"] } },
+  { id:"t-le", photo:"фото/IMG_1008.JPG", ru:"Лимон с меренгой", pt:"Limão com merengue",
+    detail:{ ru:"Лимонный курд, итальянская меренга, цедра, хрустящее тесто", pt:"Curd de limão, merengue italiano, raspa cítrica, massa crocante" },
+    tags:{ ru:["лимон","меренга","цитрус"], pt:["limão","merengue","cítrico"] } },
+  { id:"t-va", photo:"фото/IMG_1013.JPG", ru:"Ваниль с манго", pt:"Baunilha com manga",
+    detail:{ ru:"Крем дипломат, мадагаскарская ваниль, манго, маракуйя", pt:"Creme diplomata, baunilha de Madagáscar, manga, maracujá" },
+    tags:{ ru:["ваниль","манго","маракуйя"], pt:["baunilha","manga","maracujá"] } },
+  { id:"t-pe", photo:"фото/IMG_1009.JPG", ru:"Пекан с карамелью", pt:"Pecã com caramelo",
+    detail:{ ru:"Карамельный ганаш, обжаренный пекан, масляная карамель, fleur de sel", pt:"Ganache de caramelo, pecã torrado, caramelo de manteiga, fleur de sel" },
+    tags:{ ru:["пекан","карамель","fleur de sel"], pt:["pecã","caramelo","fleur de sel"] } },
+  { id:"t-bf", photo:null, ru:"Чёрный лес с вишней", pt:"Floresta negra com cereja",
+    detail:{ ru:"Тёмный шоколад, вишнёвое компоте, шантильи кирш, какао-крошка", pt:"Chocolate negro, compota de cereja, chantilly kirsch, crumble de cacau" },
+    tags:{ ru:["шоколад","вишня","кирш"], pt:["chocolate","cereja","kirsch"] } },
+];
+
+const ECLAIR_FLAVORS = [
+  { id:"e-rv", photo:"фото/55D93CEC-5533-4E58-91C1-CDC874500DFF.JPG", ru:"Малина и ваниль", pt:"Framboesa & baunilha",
+    detail:{ ru:"Ванильный крем, свежая малина, малиновое желе, белый шоколад", pt:"Creme de baunilha, framboesa fresca, geleia de framboesa, chocolate branco" },
+    tags:{ ru:["малина","ваниль","белый шоколад"], pt:["framboesa","baunilha","chocolate branco"] } },
+  { id:"e-vc", photo:"фото/F169D37B-8F34-4442-8C2D-CD96C2038C2F.JPG", ru:"Ванильный классика", pt:"Baunilha clássico",
+    detail:{ ru:"Крем дипломат на мадагаскарской ваниле, классическая помадка", pt:"Creme diplomata de baunilha de Madagáscar, fondant clássico" },
+    tags:{ ru:["ваниль","классика"], pt:["baunilha","clássico"] } },
+  { id:"e-ct", photo:"фото/IMG_1058.PNG", ru:"Шоколадный с бобом тонка", pt:"Chocolate com fava tonka",
+    detail:{ ru:"Тёмный шоколадный ганаш, боб тонка, какао-нибс, помадка", pt:"Ganache de chocolate negro, fava tonka, nibs de cacau, fondant" },
+    tags:{ ru:["шоколад","тонка","какао"], pt:["chocolate","tonka","cacau"] } },
+  { id:"e-cm", photo:"фото/IMG_0671.JPG", ru:"Карамельный", pt:"Caramelo",
+    detail:{ ru:"Карамельный крем с солью, масляная карамель, fleur de sel", pt:"Creme de caramelo salgado, caramelo de manteiga, fleur de sel" },
+    tags:{ ru:["карамель","fleur de sel"], pt:["caramelo","fleur de sel"] } },
+  { id:"e-ps", photo:"фото/5EB830D0-D35C-4911-A4DF-EB0EC3B618CD.JPG", ru:"Фисташковый", pt:"Pistácio",
+    detail:{ ru:"Сицилийская фисташка, фисташковый крем, дробленые фисташки", pt:"Pistácio da Sicília, creme de pistácio, pistácios picados" },
+    tags:{ ru:["фисташка","Сицилия"], pt:["pistácio","Sicília"] } },
+  { id:"e-hz", photo:null, ru:"Фундучный", pt:"Avelã",
+    detail:{ ru:"Пьемонтская фундучная паста, ганаш гианджуа, обжаренный фундук", pt:"Pasta de avelã do Piemonte, ganache gianduja, avelãs torradas" },
+    tags:{ ru:["фундук","гианджуа"], pt:["avelã","gianduja"] } },
+];
+
+const PRICES = { tart:14, e2:8, e3:11, e4:14 };
+
+const FL_PAL = [
+  { bg:"#F2D4D2", ln:"#E2B5B2" }, { bg:"#F8F1DC", ln:"#D8C792" },
+  { bg:"#F5DCBC", ln:"#DDB988" }, { bg:"#B8D4B0", ln:"#9CC094" },
+  { bg:"#E8D8F0", ln:"#C5ADD8" }, { bg:"#F5E0E8", ln:"#D8B5C0" },
+];
+
+function flavorObj(kind, id) {
+  return (kind === "tartlet" ? TARTLET_FLAVORS : ECLAIR_FLAVORS).find(f => f.id === id);
+}
+
+// ── Хелперы ───────────────────────────────────────────────────────────────────
+
+function pluralizeBox(n, lang) {
+  if (lang === "pt") return n === 1 ? "caixa" : "caixas";
+  const m10 = n % 10, m100 = n % 100;
+  if (m100 >= 11 && m100 <= 19) return "коробок";
+  if (m10 === 1) return "коробка";
+  if (m10 >= 2 && m10 <= 4) return "коробки";
+  return "коробок";
+}
+
+function useBreakpoint() {
+  const [w, setW] = React.useState(window.innerWidth);
+  React.useEffect(() => {
+    const fn = () => setW(window.innerWidth);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
+  return { isMobile: w < 768, isTablet: w < 1024 };
+}
+
+// ── PhotoSlot ─────────────────────────────────────────────────────────────────
+
+function PhotoSlot({ label, bg = "#EFE8DD", line = "#D8CDBA", fg = "#6B5E48" }) {
+  const id = "ps-" + Math.random().toString(36).slice(2, 7);
+  return (
+    <div className="photo-slot" style={{ "--slot-bg": bg, "--slot-fg": fg }}>
+      <svg className="photo-slot__svg" width="100%" height="100%" preserveAspectRatio="none">
+        <defs>
+          <pattern id={id} patternUnits="userSpaceOnUse" width="14" height="14" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="14" stroke={line} strokeWidth="1.2" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill={"url(#" + id + ")"} opacity="0.55" />
+      </svg>
+      <div className="photo-slot__lbl">{label}</div>
+    </div>
+  );
+}
+
+// ── MiniThumb ─────────────────────────────────────────────────────────────────
+
+function V2_MiniThumb({ kind, id }) {
+  const list = kind === "tartlet" ? TARTLET_FLAVORS : ECLAIR_FLAVORS;
+  const idx = list.findIndex(f => f.id === id);
+  const p = FL_PAL[(idx < 0 ? 0 : idx) % FL_PAL.length];
+  const pid = "vp-" + id.replace(/[^a-z0-9]/g, "") + Math.random().toString(36).slice(2, 5);
+  return (
+    <div className="mini-thumb" style={{ "--thumb-bg": p.bg }}>
+      <svg width="100%" height="100%" className="mini-thumb__svg">
+        <defs>
+          <pattern id={pid} patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="10" stroke={p.ln} strokeWidth="1" opacity="0.6" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill={"url(#" + pid + ")"} />
+      </svg>
+    </div>
+  );
+}
+
+// ── Хедер ─────────────────────────────────────────────────────────────────────
+
+function V2_Header({ lang, setLang, count, onCartOpen }) {
+  const T = (r, p) => lang === "ru" ? r : p;
+  const scrollTo = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior:"smooth" }); };
+  const nav = [
+    { ru:"Тарталетки", pt:"Tarteletes", id:"tartlets" },
+    { ru:"Эклеры",     pt:"Eclairs",    id:"eclairs"  },
+    { ru:"Отзывы",     pt:"Testemunhos",id:"reviews"  },
+    { ru:"Кейтеринг",  pt:"Catering",   id:"catering" },
+  ];
+  return (
+    <header className="header">
+      <div className="header__logo">Patissière</div>
+      <nav className="header__nav">
+        {nav.map((item, i) => (
+          <a key={i} className="header__nav-a" onClick={() => scrollTo(item.id)}>{T(item.ru, item.pt)}</a>
+        ))}
+      </nav>
+      <div className="header__right">
+        <div className="header__langs">
+          {["ru","pt"].map((l, i) => (
+            <React.Fragment key={l}>
+              {i > 0 && <span className="header__lang-dot">·</span>}
+              <button onClick={() => setLang(l)} className={"header__lang-btn" + (lang === l ? " header__lang-btn--on" : "")}>{l}</button>
+            </React.Fragment>
+          ))}
+        </div>
+        <button className="header__cart" onClick={onCartOpen}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.7 13.4a2 2 0 002 1.6h9.7a2 2 0 002-1.6L23 6H6"/>
+          </svg>
+          {count > 0 ? count : T("Корзина","Cesto")}
+          {count > 0 && <span className="header__cart-badge">{count}</span>}
+        </button>
+      </div>
+    </header>
+  );
+}
+
+// ── Герой ─────────────────────────────────────────────────────────────────────
+
+function V2_Hero({ lang }) {
+  const T = (r, p) => lang === "ru" ? r : p;
+  const { isMobile } = useBreakpoint();
+  return (
+    <section className="hero">
+      <div className="hero__top">
+        <div>
+          <h1 className="hero__h1">
+            {T("Тарталетки,","Tarteletes,")}<br/>
+            {T("эклеры","eclairs")}<br/>
+            &amp; {T("моменты","momentos")}
+          </h1>
+        </div>
+        <div className="hero__intro">
+          <div className="hero__line" />
+          <p className="hero__desc">
+            {T("Маленькая мастерская в Порту, где каждое утро рождается четыре композиции вкуса. Никаких компромиссов, никакой массовости — только свежее.",
+               "Pequeno atelier no Porto, onde todas as manhãs nascem quatro composições de sabor. Sem compromissos, sem massificação — apenas fresco.")}
+          </p>
+          <div className="hero__cta">
+            <span className="hero__dash">—</span>
+            <button className="hero__cta-btn">{T("Собрать заказ","Encomendar agora")}</button>
+          </div>
+        </div>
+      </div>
+      <div className="hero__photos">
+        <div className="hero__main">
+          <div className="hero-photo-wrap">
+            <img src="фото/IMG_0787.JPG" alt="Тарталетки" />
+          </div>
+          <div className="hero__lbl">{T("свежая клубника","morango fresco")}</div>
+        </div>
+        {!isMobile && (
+          <div className="hero__mid">
+            <div className="hero-photo-wrap">
+              <img src="фото/IMG_0671.JPG" alt="" />
+            </div>
+            <div className="hero__count">
+              <span className="hero__count-tag">{T("на заказ","por encomenda")}</span>
+              <span className="hero__count-num">{T("более 10","mais de 10")}<br/><span className="hero__count-unit">{T("вкусов десертов","sabores")}</span></span>
+            </div>
+          </div>
+        )}
+        <div className="hero__side">
+          <div className="hero-photo-wrap">
+            <img src="фото/IMG_1062.PNG" alt="" className="hero-img--choux" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Карточка вкуса ────────────────────────────────────────────────────────────
+
+function V2_FlavorCard({ fl, lang, idx, selected, disabled, onClick }) {
+  const p = FL_PAL[idx % FL_PAL.length];
+  return (
+    <button onClick={onClick} disabled={disabled && !selected}
+      className={"fc" + ((disabled && !selected) ? " fc--dis" : "")}>
+      <div className="fc__thumb" style={{ "--card-bg": p.bg }}>
+        {fl.photo
+          ? <img src={fl.photo} alt={fl[lang]} className="fc__photo" />
+          : <PhotoSlot label={fl[lang]} bg={p.bg} line={p.ln} fg="#2D4A3A" />}
+        <div className="fc__num">0{idx + 1}</div>
+        {selected && (
+          <div className="fc__sel-ring">
+            <div className="fc__check">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="fc__title">{fl[lang]}</div>
+      <div className="fc__detail">{fl.detail[lang]}</div>
+      <div className="fc__tags">
+        {fl.tags[lang].map(t => <span key={t} className="fc__tag">{t}</span>)}
+      </div>
+    </button>
+  );
+}
+
+// ── Продукт / Карусель ────────────────────────────────────────────────────────
+
+function V2_Product({ lang, kind, onAdd, sectionId }) {
+  const T = (r, p) => lang === "ru" ? r : p;
+  const { isMobile, isTablet } = useBreakpoint();
+  const isT = kind === "tartlet";
+  const [mode, setMode] = React.useState("one");
+  const [size, setSize] = React.useState(isT ? 4 : 2);
+  const [flavors, setFlavors] = React.useState([]);
+  const [qty, setQty] = React.useState(1);
+  const gridMode = isT ? mode : (size === 4 ? mode : "one");
+  const maxFlavors = gridMode === "two" ? 2 : 1;
+  const price = isT ? PRICES.tart : ({ 2:PRICES.e2, 3:PRICES.e3, 4:PRICES.e4 }[size]);
+  const ready = flavors.length === maxFlavors;
+  const toggle = (id) => setFlavors(prev =>
+    prev.includes(id) ? prev.filter(x => x !== id) : (prev.length < maxFlavors ? [...prev, id] : prev));
+  const reset = () => { setFlavors([]); setQty(1); };
+
+  const list = isT ? TARTLET_FLAVORS : ECLAIR_FLAVORS;
+  const perView = isMobile ? 1 : isTablet ? 2 : 4;
+  const stripCount = perView + 2;
+  const trackW = ((stripCount / perView) * 100) + "%";
+  const restPct = (-(100 / stripCount)) + "%";
+  const nextPct = (-(200 / stripCount)) + "%";
+
+  const [startIdx, setStartIdx] = React.useState(0);
+  const trackRef = React.useRef(null);
+  const lockRef = React.useRef(false);
+
+  const [toastMsg, setToastMsg] = React.useState("");
+  const [toastOn, setToastOn] = React.useState(false);
+  const toastTimer = React.useRef(null);
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setToastOn(true);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToastOn(false), 3000);
+  };
+
+  const stripItems = Array.from({ length: stripCount }, (_, i) => {
+    const ri = ((startIdx - 1 + i) % list.length + list.length) % list.length;
+    return { item: list[ri], realIdx: ri };
+  });
+
+  React.useLayoutEffect(() => {
+    if (trackRef.current) {
+      trackRef.current.style.transition = "none";
+      trackRef.current.style.transform = "translateX(" + restPct + ")";
+    }
+  }, [startIdx, perView]);
+
+  React.useEffect(() => { setStartIdx(0); }, [list, perView]);
+
+  const slide = (dir) => {
+    if (lockRef.current || !trackRef.current) return;
+    lockRef.current = true;
+    const t = trackRef.current;
+    t.style.transition = "transform 0.5s cubic-bezier(0.65,0,0.35,1)";
+    t.style.transform = dir === 1 ? "translateX(" + nextPct + ")" : "translateX(0%)";
+    setTimeout(() => {
+      setStartIdx(prev => ((prev + dir) % list.length + list.length) % list.length);
+      requestAnimationFrame(() => { lockRef.current = false; });
+    }, 520);
+  };
+
+  return (
+    <section id={sectionId} className="product">
+      <div className="product__head">
+        <div>
+          <div className="product__chapter">
+            ❋ {isT ? T("Глава первая","Capítulo um") : T("Глава вторая","Capítulo dois")}
+          </div>
+          <h2 className="product__title">
+            {isT ? T("Тарталетки","Tarteletes") : T("Эклеры","Eclairs")}
+          </h2>
+        </div>
+        <div>
+          <p className="product__desc">
+            {isT
+              ? T("Хрустящая основа из песочного теста, заварной крем, свежие сезонные фрукты. Набор из четырёх — один или два вкуса, как вам нравится.",
+                  "Base crocante de massa areada, creme pasteleiro, frutos da época. Conjunto de quatro — um ou dois sabores, à sua escolha.")
+              : T("Заварное тесто и кремовые начинки. От пары на двоих до коробки из четырёх — выбирайте размер и комбинируйте вкусы.",
+                  "Massa choux e recheios cremosos. Do par para dois à caixa de quatro — escolha o tamanho e combine sabores.")}
+          </p>
+        </div>
+      </div>
+
+      <div className="product__box">
+        <div className="product__bhead">
+          <div className="product__btitle">
+            {T(list.length + " композиций на выбор", list.length + " composições à escolha")}
+          </div>
+          <div className="product__nav">
+            <button className="product__nbtn" onClick={() => slide(-1)}>←</button>
+            <button className="product__nbtn product__nbtn--next" onClick={() => slide(1)}>→</button>
+          </div>
+        </div>
+        <div className="carousel-wrap">
+          <div className="carousel-ov">
+            <div ref={trackRef} className="carousel-track" style={{ width: trackW, transform: "translateX(" + restPct + ")" }}>
+              {stripItems.map(({ item: fl, realIdx }, i) => (
+                <div key={fl.id + "-" + i} className="carousel-slot" style={{ width: "calc(100% / " + stripCount + ")" }}>
+                  <V2_FlavorCard fl={fl} lang={lang} idx={realIdx}
+                    selected={flavors.includes(fl.id)}
+                    disabled={flavors.length >= maxFlavors}
+                    onClick={() => toggle(fl.id)} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="order-panel">
+          <div className="order-controls">
+            {!isT && (
+              <div>
+                <div className="order-grp-lbl">{T("Размер","Tamanho")}</div>
+                <div className="order-size-btns">
+                  {[2,3,4].map(s => (
+                    <button key={s}
+                      className={"order-size-btn" + (size === s ? " order-size-btn--on" : "")}
+                      onClick={() => { setSize(s); reset(); if (s < 4) setMode("one"); }}>{s}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {(isT || size === 4) && (
+              <div>
+                <div className="order-grp-lbl">{T("Состав","Composição")}</div>
+                <div className="order-mode-btns">
+                  {[["one", T("1 вкус","1 sabor")], ["two", T("2 вкуса","2 sabores")]].map(([v, l]) => (
+                    <button key={v}
+                      className={"order-mode-btn" + (mode === v ? " order-mode-btn--on" : "")}
+                      onClick={() => { setMode(v); reset(); }}>{l}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div>
+              <div className="order-grp-lbl">{T("Количество","Quantidade")}</div>
+              <div className="order-qty-wrap">
+                <button className="order-qty-btn" onClick={() => setQty(Math.max(1, qty - 1))}>−</button>
+                <span className="order-qty-num">{qty}</span>
+                <button className="order-qty-btn" onClick={() => setQty(qty + 1)}>+</button>
+              </div>
+            </div>
+          </div>
+
+          <div className="order-status">
+            {ready ? T("✓ Готово к добавлению в корзину","✓ Pronto a adicionar") : T("Выберите вкус выше","Escolha um sabor acima")}
+          </div>
+
+          <div className="order-price-area">
+            <div className="price-num price-product">
+              {price * qty}<span className="price-product-eu"> €</span>
+            </div>
+            <button
+              className={"order-add-btn" + (ready ? " order-add-btn--on" : "")}
+              onClick={() => {
+                if (ready) {
+                  onAdd({ kind, flavors:[...flavors], size: isT ? 4 : size, qty, price });
+                  reset();
+                } else {
+                  const need = maxFlavors - flavors.length;
+                  const msg = lang === "ru"
+                    ? (flavors.length === 0
+                        ? "Выберите " + maxFlavors + (maxFlavors === 1 ? " вкус" : " вкуса")
+                        : "Ещё " + need + (need === 1 ? " вкус" : " вкуса") + " — выберите выше")
+                    : (flavors.length === 0
+                        ? "Escolha " + maxFlavors + " sabor" + (maxFlavors > 1 ? "es" : "")
+                        : "Mais " + need + " sabor" + (need > 1 ? "es" : "") + " — escolha acima");
+                  showToast(msg);
+                }
+              }}>
+              {T("Положить в корзину","Adicionar ao cesto")}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className={"toast" + (toastOn ? " toast--show" : "")}>{toastMsg}</div>
+    </section>
+  );
+}
+
+// ── Редакционный блок ─────────────────────────────────────────────────────────
+
+function V2_Editorial({ lang }) {
+  const T = (r, p) => lang === "ru" ? r : p;
+  return (
+    <section className="ed">
+      <div className="ed__grid">
+        <div>
+          <div className="ed__eyebrow">{T("Журнал · Заметки шефа","Diário · Notas do chef")}</div>
+          <h2 className="ed__title">{T("О сезонности","Sobre sazonalidade")}</h2>
+        </div>
+        <div>
+          <p className="ed__quote">
+            {T(
+              "«В мае — клубника, в июле — манго, в октябре — груша и пекан. Мы не делаем то, чего нет на рынке сегодня утром.»",
+              "“Em maio — morango, em julho — manga, em outubro — pera e pecã. Não fazemos aquilo que não está no mercado esta manhã.”"
+            )}
+          </p>
+          <div className="ed__attr">— Marina, chef pâtissière</div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Галерея изделий ───────────────────────────────────────────────────────────
+
+function V2_Gallery({ lang }) {
+  const T = (r, p) => lang === "ru" ? r : p;
+  const ROW1 = [
+    "фото/IMG_0284.JPG",
+    "фото/IMG_0787.JPG",
+    "фото/55D93CEC-5533-4E58-91C1-CDC874500DFF.JPG",
+    "фото/IMG_1008.JPG",
+    "фото/IMG_1013.JPG",
+    "фото/DF987CD6-5971-4D9D-88A0-0EF1E71177AD.JPG",
+    "фото/IMG_1062.PNG",
+    "фото/5EB830D0-D35C-4911-A4DF-EB0EC3B618CD.JPG",
+    "фото/451AD1D8-94C3-493C-B6EC-88E2E30AFA55.JPG",
+  ];
+  const ROW2 = [
+    "фото/IMG_0671.JPG",
+    "фото/F169D37B-8F34-4442-8C2D-CD96C2038C2F.JPG",
+    "фото/IMG_1010.JPG",
+    "фото/IMG_1009.JPG",
+    "фото/EF50BD5B-5FFC-4ADE-B208-2598C6C18D05.JPG",
+    "фото/IMG_1058.PNG",
+    "фото/IMG_0156.JPG",
+    "фото/IMG_1007.JPG",
+    "фото/IMG_1014.JPG",
+  ];
+  return (
+    <section className="gallery">
+      <div className="gallery__head">
+        <div className="gallery__eyebrow">❋ {T("Галерея","Galeria")}</div>
+        <h2 className="gallery__title">{T("Наши изделия","Nossas criações")}</h2>
+      </div>
+      <div className="gallery__rows">
+        <div className="gallery__row gallery__row--fwd">
+          {[...ROW1, ...ROW1].map((src, i) => (
+            <div key={i} className="gallery__item"><img src={src} alt="" /></div>
+          ))}
+        </div>
+        <div className="gallery__row gallery__row--rev">
+          {[...ROW2, ...ROW2].map((src, i) => (
+            <div key={i} className="gallery__item"><img src={src} alt="" /></div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Отзывы ────────────────────────────────────────────────────────────────────
+
+function V2_Reviews({ lang }) {
+  const T = (r, p) => lang === "ru" ? r : p;
+  const { isMobile } = useBreakpoint();
+  const reviews = [
+    { text:{ ru:"«Заказывала тарталетки с фисташкой на день рождения — гости были в восторге. Вкус настоящий, не приторный.»",
+             pt:"«Encomendei tarteletes de pistácio para o aniversário — os convidados ficaram encantados. Sabor verdadeiro, não enjoativo.»" },
+      name:"Анна К.", detail:{ ru:"клубника с фисташкой × 4", pt:"morango com pistácio × 4" } },
+    { text:{ ru:"«Эклеры с тонка — это отдельная история. Берём каждую неделю. Упаковка тоже красивая.»",
+             pt:"«Os éclairs com tonka são uma história à parte. Compramos todas as semanas. A embalagem também é bonita.»" },
+      name:"Михаил Р.", detail:{ ru:"шоколад с бобом тонка × 2", pt:"chocolate com fava tonka × 2" } },
+    { text:{ ru:"«Долго искала кондитерскую без лишнего сахара. Нашла. Крем дипломат просто идеальный.»",
+             pt:"«Procurei muito uma pastelaria que não abuse do açúcar. Encontrei. O creme diplomata é simplesmente perfeito.»" },
+      name:"Sofia M.", detail:{ ru:"ваниль с манго × 4", pt:"baunilha com manga × 4" } },
+  ];
+  return (
+    <section id="reviews" className="reviews">
+      <div className="reviews__head">
+        <div>
+          <div className="reviews__eyebrow">❋ {T("Отзывы","Testemunhos")}</div>
+          <h2 className="reviews__title">{T("Говорят клиенты","O que dizem")}</h2>
+        </div>
+        {!isMobile && <div className="reviews__loc">Porto · 2024–2025</div>}
+      </div>
+      <div className="reviews__grid">
+        {reviews.map((r, i) => (
+          <div key={i} className={"rcard" + (i === 1 ? " rcard--dark" : "")}>
+            <div>
+              <div className="rcard__mark">"</div>
+              <p className="rcard__text">{r.text[lang]}</p>
+            </div>
+            <div className="rcard__foot">
+              <div className="rcard__name">{r.name}</div>
+              <div className="rcard__detail">{r.detail[lang]}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── Кейтеринг ─────────────────────────────────────────────────────────────────
+
+function V2_Catering({ lang }) {
+  const T = (r, p) => lang === "ru" ? r : p;
+  return (
+    <section id="catering" className="catering">
+      <div className="catering__grid">
+        <div>
+          <h2 className="catering__title">{T("Кейтеринг","Catering")}</h2>
+        </div>
+        <div>
+          <p className="catering__desc">
+            {T("Оформление мероприятий и корпоративных заказов. Тарталетки и эклеры для вашего события — индивидуально, свежо и точно в срок.",
+               "Serviço de catering para eventos e encomendas corporativas. Tarteletes e éclairs para o seu evento — personalizados, frescos e pontuais.")}
+          </p>
+          <button className="catering__btn">{T("Написать нам","Contactar")}</button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Футер ─────────────────────────────────────────────────────────────────────
+
+function V2_Footer({ lang }) {
+  const T = (r, p) => lang === "ru" ? r : p;
+  const { isMobile, isTablet } = useBreakpoint();
+  const cols = [
+    [T("Меню","Menu"),      [T("Тарталетки","Tarteletes"), T("Эклеры","Eclairs")]],
+    [T("Найти нас","Visitar"), ["Rua das Flores, Porto", "Ter — Sáb · 10—19"]],
+    [T("Связь","Contacto"), ["hello@patissiere.pt", "@patissiere.porto"]],
+  ];
+  return (
+    <footer className="footer">
+      <div className="footer__grid" style={{ gridTemplateColumns: isMobile ? "1fr 1fr" : isTablet ? "1fr 1fr 1fr" : "1.5fr 1fr 1fr 1fr" }}>
+        <div className={isMobile ? "footer__logo-col" : ""}>
+          <div className="footer__logo">Patissière</div>
+          <p className="footer__desc">
+            {T("Маленькая мастерская в Порту. Тарталетки и эклеры на заказ — каждое утро свежие.",
+               "Pequeno atelier no Porto. Tarteletes e éclairs por encomenda — frescos todas as manhãs.")}
+          </p>
+        </div>
+        {cols.map(([title, items], i) => (
+          <div key={i}>
+            <div className="footer__col-h">{title}</div>
+            {items.map((it, j) => <div key={j} className="footer__col-i">{it}</div>)}
+          </div>
+        ))}
+      </div>
+      <div className="footer__bot">
+        <span>© 2026 Patissière</span>
+        <span className="footer__tag">{T("Сделано с любовью в Порту","Feito com amor no Porto")}</span>
+      </div>
+    </footer>
+  );
+}
+
+// ── Корзина ───────────────────────────────────────────────────────────────────
+
+function V2_CartDrawer({ lang, cart, total, onQtyChange, onRemove, onClose, onCheckout }) {
+  const T = (r, p) => lang === "ru" ? r : p;
+  const tartlets = cart.filter(i => i.kind === "tartlet");
+  const eclairs  = cart.filter(i => i.kind === "eclair");
+
+  const CartGroup = ({ items, sectionLabel }) => {
+    if (!items.length) return null;
+    return (
+      <div className="cart-group">
+        <div className="cart-section-label">{sectionLabel}</div>
+        {items.map(item => {
+          const pcsTotal = item.kind === "tartlet" ? 4 : item.size;
+          const pcsEach  = Math.floor(pcsTotal / item.flavors.length);
+          return (
+            <div key={item.id} className="cart-item">
+              {item.flavors.map(fid => {
+                const fl = flavorObj(item.kind, fid);
+                return (
+                  <div key={fid} className="cart-flavor-row">
+                    <V2_MiniThumb kind={item.kind} id={fid} />
+                    <span className="cart-flavor-name">{fl ? fl[lang] : fid}</span>
+                    <span className="cart-flavor-pcs">{pcsEach} {T("шт","un")}</span>
+                  </div>
+                );
+              })}
+              <div className="cart-item-footer">
+                <div className="cart-qty-wrap">
+                  <button className="cart-qty-btn" onClick={() => onQtyChange(item.id, -1)}>−</button>
+                  <span className="cart-qty-num">{item.qty}</span>
+                  <button className="cart-qty-btn" onClick={() => onQtyChange(item.id, 1)}>+</button>
+                </div>
+                <span className="cart-qty-label">{pluralizeBox(item.qty, lang)}</span>
+                <span className="price-num price-cart-item">{item.price * item.qty} €</span>
+                <button className="cart-remove-btn" onClick={() => onRemove(item.id)}>✕</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  return (
+    <div className="cart-overlay">
+      <div className="cart-back" onClick={onClose} />
+      <div className="cart-panel">
+        <div className="cart-hd">
+          <div className="cart-hd__title">{T("Ваш заказ","O seu pedido")}</div>
+          <button className="cart-hd__close" onClick={onClose}>✕</button>
+        </div>
+        <div className="cart-body">
+          {cart.length === 0 ? (
+            <div className="cart-empty">
+              <div className="cart-empty__ic">∅</div>
+              <div className="cart-empty__tx">{T("Корзина пуста","Cesto vazio")}</div>
+            </div>
+          ) : (
+            <>
+              <CartGroup items={tartlets} sectionLabel={T("Тарталетки","Tarteletes")} />
+              <CartGroup items={eclairs}  sectionLabel={T("Эклеры","Eclairs")} />
+            </>
+          )}
+        </div>
+        {cart.length > 0 && (
+          <div className="cart-ft">
+            <div className="cart-total-row">
+              <span className="cart-total-lbl">{T("Итого","Total")}</span>
+              <span className="price-num price-cart-total">{total} €</span>
+            </div>
+            <button className="cart-checkout-btn" onClick={onCheckout}>
+              {T("Оформить заказ →","Finalizar pedido →")}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Оформление заказа ─────────────────────────────────────────────────────────
+
+function V2_Checkout({ lang, cart, total, onClose, onDone }) {
+  const T = (r, p) => lang === "ru" ? r : p;
+  const [form, setForm] = React.useState({ name:"", contactMethod:"whatsapp", contactValue:"", date:"", timeSlot:"", delivery:"pickup", address:"", note:"" });
+  const [sent, setSent] = React.useState(false);
+  const [calOpen, setCalOpen] = React.useState(false);
+
+  const today = new Date();
+  const minDate = new Date(today); minDate.setDate(today.getDate() + 1);
+  const [calYear, setCalYear] = React.useState(minDate.getFullYear());
+  const [calMonth, setCalMonth] = React.useState(minDate.getMonth());
+  const [calPickedDate, setCalPickedDate] = React.useState(null);
+
+  const canSubmit = form.name.trim() && form.contactValue.trim() && form.date && form.timeSlot
+    && (form.delivery === "pickup" || form.address.trim());
+
+  const DAY_HDR = { ru:["Пн","Вт","Ср","Чт","Пт","Сб","Вс"], pt:["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"] };
+  const MONTH_FULL = {
+    ru:["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
+    pt:["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"],
+  };
+  const MONTH_SHORT = {
+    ru:["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"],
+    pt:["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"],
+  };
+  const TIME_SLOTS = ["10:00–12:00","12:00–14:00","14:00–16:00","16:00–18:00"];
+
+  const isDisabled = (d) => {
+    if (!d) return true;
+    const a = new Date(d); a.setHours(0,0,0,0);
+    const b = new Date(minDate); b.setHours(0,0,0,0);
+    return a < b;
+  };
+  const isSame = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+  const buildCells = () => {
+    const firstDow = (new Date(calYear, calMonth, 1).getDay() + 6) % 7;
+    const dim = new Date(calYear, calMonth + 1, 0).getDate();
+    const cells = Array(firstDow).fill(null);
+    for (let d = 1; d <= dim; d++) cells.push(new Date(calYear, calMonth, d));
+    return cells;
+  };
+
+  const prevMonth = () => { if (calMonth === 0) { setCalYear(y => y - 1); setCalMonth(11); } else setCalMonth(m => m - 1); };
+  const nextMonth = () => { if (calMonth === 11) { setCalYear(y => y + 1); setCalMonth(0); } else setCalMonth(m => m + 1); };
+
+  const handleDay = (d) => {
+    if (isDisabled(d)) return;
+    setCalPickedDate(d);
+    setForm(p => ({ ...p, date: d.toISOString().slice(0,10), timeSlot:"" }));
+  };
+  const handleSlot = (slot) => {
+    setForm(p => ({ ...p, timeSlot: slot }));
+    setTimeout(() => setCalOpen(false), 180);
+  };
+  const formatSelected = () => {
+    if (!form.date) return null;
+    const d = new Date(form.date + "T00:00:00");
+    const dow = DAY_HDR[lang][(d.getDay() + 6) % 7];
+    return dow + ", " + d.getDate() + " " + MONTH_SHORT[lang][d.getMonth()] + (form.timeSlot ? " · " + form.timeSlot : "");
+  };
+
+  const cells = buildCells();
+
+  return (
+    <div className="co-overlay">
+      <div className="co-back" onClick={() => { if (!sent) onClose(); }} />
+      <div className="co-modal">
+        {sent ? (
+          <div className="co-ok">
+            <div className="co-ok__ring">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2D4A3A" strokeWidth="2" strokeLinecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div className="co-ok__title">{T("Заказ принят!","Pedido recebido!")}</div>
+            {form.date && form.timeSlot && (
+              <div className="co-ok__date">
+                <span className="co-ok__date-tx">📅 {formatSelected()}</span>
+              </div>
+            )}
+            <p className="co-ok__msg">{T("Мы свяжемся с вами для подтверждения.","Entraremos em contacto para confirmar.")}</p>
+            <button className="co-ok__btn" onClick={onDone}>{T("Готово","Fechar")}</button>
+          </div>
+        ) : (
+          <>
+            <div className="co-hd">
+              <div className="co-title">{T("Оформление","Finalizar")}</div>
+              <button className="co-close" onClick={onClose}>✕</button>
+            </div>
+
+            <div className="co-summary">
+              {cart.map(item => {
+                const kindLabel = item.kind === "tartlet"
+                  ? T("Тарталетки · 4 шт","Tarteletes · 4 un")
+                  : T("Эклеры","Eclairs") + " · " + item.size + " " + T("шт","un");
+                const fl = item.flavors.map(id => { const f = flavorObj(item.kind, id); return f ? f[lang] : id; }).join(" + ");
+                return (
+                  <div key={item.id} className="co-sum-row">
+                    <div>
+                      <div className="co-sum-kind">{kindLabel} ×{item.qty}</div>
+                      <div className="co-sum-flavor">{fl}</div>
+                    </div>
+                    <div className="co-sum-price">{item.price * item.qty} €</div>
+                  </div>
+                );
+              })}
+              <div className="co-sum-total-row">
+                <span className="co-sum-total-lbl">{T("Итого","Total")}</span>
+                <span className="co-sum-total-p">{total} €</span>
+              </div>
+            </div>
+
+            <div className="co-field">
+              <label className="co-label">{T("Имя *","Nome *")}</label>
+              <input className="co-input" type="text" value={form.name}
+                onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                placeholder={T("Ваше имя","O seu nome")} />
+            </div>
+
+            <div className="co-field">
+              <label className="co-label">{T("Контакт *","Contacto *")}</label>
+              <div className="co-methods">
+                {[["whatsapp","WhatsApp"],["telegram","Telegram"],["phone",T("Телефон","Telefone")],["email","Email"]].map(([m,l]) => (
+                  <button key={m}
+                    className={"co-method-btn" + (form.contactMethod === m ? " co-method-btn--on" : "")}
+                    onClick={() => setForm(p => ({ ...p, contactMethod:m, contactValue:"" }))}>{l}</button>
+                ))}
+              </div>
+              <input className="co-input"
+                type={form.contactMethod === "email" ? "email" : "tel"}
+                value={form.contactValue}
+                onChange={e => setForm(p => ({ ...p, contactValue: e.target.value }))}
+                placeholder={{ whatsapp:"+351 999 000 000", telegram:"@username", phone:"+351 999 000 000", email:"hello@email.com" }[form.contactMethod]} />
+            </div>
+
+            <div className="co-field">
+              <label className="co-label">{T("Дата и время *","Data e hora *")}</label>
+              <button
+                className={"co-date-btn" + (form.date ? " co-date-btn--set" : " co-date-btn--unset")}
+                onClick={() => setCalOpen(o => !o)}>
+                <span>{formatSelected() || T("Выберите дату и время","Escolha data e hora")}</span>
+                <span className={"co-date-arr" + (calOpen ? " co-date-arr--open" : "")}>▾</span>
+              </button>
+              {calOpen && (
+                <div className="co-cal">
+                  <div className="co-cal-nav">
+                    <button className="co-cal-btn" onClick={prevMonth}>←</button>
+                    <span className="co-cal-month">{MONTH_FULL[lang][calMonth]} {calYear}</span>
+                    <button className="co-cal-btn" onClick={nextMonth}>→</button>
+                  </div>
+                  <div className="co-cal-grid">
+                    {DAY_HDR[lang].map(d => <div key={d} className="co-cal-dname">{d}</div>)}
+                  </div>
+                  <div className="co-cal-grid">
+                    {cells.map((d, i) => {
+                      if (!d) return <div key={"e"+i} />;
+                      const dis = isDisabled(d);
+                      const sel = calPickedDate && isSame(d, calPickedDate);
+                      return (
+                        <button key={i} disabled={dis} onClick={() => handleDay(d)}
+                          className={"co-cal-day" + (dis ? " co-cal-day--dis" : "") + (sel ? " co-cal-day--sel" : "")}>
+                          {d.getDate()}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {calPickedDate && (
+                    <div className="co-slots">
+                      <div className="co-slots-lbl">{T("Выберите время","Escolha o horário")}</div>
+                      <div className="co-slot-grid">
+                        {TIME_SLOTS.map(slot => (
+                          <button key={slot}
+                            className={"co-slot-btn" + (form.timeSlot === slot ? " co-slot-btn--on" : "")}
+                            onClick={() => handleSlot(slot)}>{slot}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="co-dlv-section">
+              <label className="co-label">{T("Получение","Recebimento")}</label>
+              <div className="co-dlv-btns">
+                {[["pickup",T("Самовывоз","Levantar")],["delivery",T("Доставка (Uber/Bolt)","Entrega (Uber/Bolt)")]].map(([v,l]) => (
+                  <button key={v}
+                    className={"co-dlv-btn" + (form.delivery === v ? " co-dlv-btn--on" : "")}
+                    onClick={() => setForm(p => ({ ...p, delivery:v, address:"" }))}>{l}</button>
+                ))}
+              </div>
+            </div>
+
+            {form.delivery === "pickup" && (
+              <div className="co-info co-info--pickup">
+                <span className="co-info-ic">📍</span>
+                <div className="co-info-tx co-info-tx--p">
+                  {lang === "ru"
+                    ? <span>Самовывоз осуществляется по адресу:<br/><strong>м. Parque de Real · Rua Florbela Espanca</strong></span>
+                    : <span>Levantamento no endereço:<br/><strong>M. Parque de Real · Rua Florbela Espanca</strong></span>}
+                </div>
+              </div>
+            )}
+
+            {form.delivery === "delivery" && (
+              <>
+                <div className="co-info co-info--delivery">
+                  <span className="co-info-ic">🚗</span>
+                  <div className="co-info-tx co-info-tx--d">
+                    {T("Доставка осуществляется через Uber или Bolt. Точная стоимость будет известна в момент отправки — мы согласуем её с вами перед отправкой заказа.",
+                       "Entrega via Uber ou Bolt. O custo exacto será confirmado no momento do envio — iremos acordar consigo antes de despachar.")}
+                  </div>
+                </div>
+                <div className="co-field">
+                  <label className="co-label">{T("Адрес доставки *","Morada de entrega *")}</label>
+                  <input className="co-input" type="text" value={form.address}
+                    onChange={e => setForm(p => ({ ...p, address: e.target.value }))}
+                    placeholder={T("Улица, дом, квартира","Rua, número, andar")} />
+                </div>
+              </>
+            )}
+
+            <div className="co-field co-field--lg">
+              <label className="co-label">{T("Комментарий","Observações")}</label>
+              <textarea rows={3} className="co-input" style={{ resize:"vertical" }}
+                value={form.note}
+                onChange={e => setForm(p => ({ ...p, note: e.target.value }))}
+                placeholder={T("Пожелания к заказу...","Observações ao pedido...")} />
+            </div>
+
+            <button
+              className={"co-submit" + (canSubmit ? " co-submit--on" : " co-submit--off")}
+              disabled={!canSubmit}
+              onClick={() => { if (canSubmit) setSent(true); }}>
+              {T("Отправить заказ →","Enviar pedido →")}
+            </button>
+            {!canSubmit && <p className="co-hint">{T("Заполните все обязательные поля","Preencha todos os campos obrigatórios")}</p>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Приложение ────────────────────────────────────────────────────────────────
+
+function SiteV2() {
+  const [lang, setLang] = React.useState("ru");
+  const [cart, setCart] = React.useState([]);
+  const [cartOpen, setCartOpen] = React.useState(false);
+  const [checkoutOpen, setCheckoutOpen] = React.useState(false);
+
+  const onAdd = (item) => { setCart(c => [...c, { ...item, id: Date.now() }]); setCartOpen(true); };
+  const changeQty = (id, delta) => setCart(c => c.map(i => i.id === id ? { ...i, qty: Math.max(1, i.qty + delta) } : i));
+  const removeItem = (id) => setCart(c => c.filter(i => i.id !== id));
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const count = cart.reduce((s, i) => s + i.qty, 0);
+
+  return (
+    <div className="site">
+      <V2_Header lang={lang} setLang={setLang} count={count} onCartOpen={() => setCartOpen(true)} />
+      <V2_Hero lang={lang} />
+      <V2_Product lang={lang} kind="tartlet" onAdd={onAdd} sectionId="tartlets" />
+      <V2_Editorial lang={lang} />
+      <V2_Product lang={lang} kind="eclair" onAdd={onAdd} sectionId="eclairs" />
+      <V2_Gallery lang={lang} />
+      <V2_Reviews lang={lang} />
+      <V2_Catering lang={lang} />
+      <V2_Footer lang={lang} />
+
+      <button className="cart-fab" onClick={() => setCartOpen(true)}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.7 13.4a2 2 0 002 1.6h9.7a2 2 0 002-1.6L23 6H6"/>
+        </svg>
+        {count > 0 && <span className="cart-fab__badge">{count}</span>}
+      </button>
+
+      {cartOpen && (
+        <V2_CartDrawer lang={lang} cart={cart} total={total}
+          onQtyChange={changeQty} onRemove={removeItem}
+          onClose={() => setCartOpen(false)}
+          onCheckout={() => { setCartOpen(false); setCheckoutOpen(true); }} />
+      )}
+      {checkoutOpen && (
+        <V2_Checkout lang={lang} cart={cart} total={total}
+          onClose={() => setCheckoutOpen(false)}
+          onDone={() => { setCheckoutOpen(false); setCart([]); }} />
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<SiteV2 />);
+</script>
+</body>
+</html>

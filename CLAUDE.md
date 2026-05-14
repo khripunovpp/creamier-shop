@@ -13,6 +13,7 @@ backend/
 frontend/
   shop/         — Клиентское Angular-приложение (SSR, порт 4201)
   admin/        — Админ-панель Angular (порт 4200)
+  shared/       — Константы/типы, импортируются обоими приложениями (см. tsconfig.app.json include)
 ```
 
 ## Стек

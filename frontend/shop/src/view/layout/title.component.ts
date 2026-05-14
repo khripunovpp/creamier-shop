@@ -1,18 +1,18 @@
-import {Component, input, signal} from '@angular/core';
+import {Component, input} from '@angular/core';
 import {NgClass} from '@angular/common';
 
 @Component({
   selector: 'cmh-title',
   standalone: true,
   template: `
-      <p [class.title--flat]="flat()"
-         [ngClass]="'title--' + level()"
-         class="title"
-         [attr.data-u2e]="'title.level.' + level()"
-         role="heading"
-         aria-level="{{ level() }}">
-          <ng-content></ng-content>
-      </p>`,
+    <p [class.title--flat]="flat()"
+       [ngClass]="'title--' + level()"
+       class="title"
+       [attr.data-u2e]="'title.level.' + level()"
+       role="heading"
+       aria-level="{{ level() }}">
+      <ng-content></ng-content>
+    </p>`,
   imports: [
     NgClass
   ],
@@ -53,6 +53,6 @@ import {NgClass} from '@angular/common';
   ]
 })
 export class TitleComponent {
- level = input(1);
- flat = input(false);
+  level = input(1);
+  flat = input(false);
 }

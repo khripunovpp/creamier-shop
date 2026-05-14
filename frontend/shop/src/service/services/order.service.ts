@@ -1,57 +1,37 @@
-import {inject, Injectable} from '@angular/core';
-import {CartService} from './cart.service';
-import {combineLatestWith, map, Observable} from 'rxjs';
-import {Order} from '../../types/order.type';
-import {DeliveryService} from './delivery.service';
-import {ApiService} from './api.service';
-import {environment} from '../../env/environment';
+import { inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ApiService } from './api.service';
+import { environment } from '../../env/environment';
 
-@Injectable({
-  providedIn: 'root',
-})
+// Mirrors the Zod schema in backend/api-public/src/schemes/create-order.scheme.ts.
+// Server validates the shape; this type just keeps the call site accurate.
+export interface CreateOrderPayload {
+  items: { stock_set_rule_id: string; flavor_ids: string[]; quantity: number }[];
+  contact_channel: 'whatsapp' | 'telegram' | 'phone' | 'email';
+  name: string;
+  email?: string | null;
+  phone_number?: string | null;
+  telegram?: string | null;
+  whatsapp?: string | null;
+  delivery_date?: string | null;
+  delivery_time?: string | null;
+  delivery_info?: Record<string, unknown> | null;
+  delivery_type?: 'pickup' | 'delivery';
+  comment?: string | null;
+}
+
+export interface CreateOrderResponse {
+  orderId: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class OrderService {
-  constructor() {
-  }
+  private readonly _api = inject(ApiService);
 
-  readonly cartService = inject(CartService);
-  readonly deliveryService = inject(DeliveryService);
-  private readonly _apiService = inject(ApiService);
-
-  get order$(): Observable<Order> {
-    return this.cartService.cart$.pipe(
-      combineLatestWith(this.deliveryService.deliveryDetails$),
-      map(([cart, deliveryDetails]) => ({
-        cart: cart,
-        delivery: deliveryDetails,
-      })),
-    );
-  }
-
-  get total$() {
-    return this.cartService.sum$;
-  }
-
-  createOrder(
-    order: Order
-  ) {
-    const parameters = {
-      items: order.cart.map(item => ({
-        id: item.item.id,
-        quantity: item.quantity,
-      })),
-      name: order.delivery.name,
-      email: order.delivery.email,
-      phone_number: order.delivery.phoneNumber,
-      telegram: order.delivery.telegram,
-      whatsapp: order.delivery.whatsapp,
-      delivery_date: new Date(order.delivery.time).toISOString(),
-      delivery_info: order.delivery.shipping,
-      delivery_type: order.delivery.shipping ? 'shipping' : 'pickup',
-      comment: order.delivery.comment,
-    };
-    return this._apiService.post(
+  create(payload: CreateOrderPayload): Observable<CreateOrderResponse> {
+    return this._api.post<CreateOrderResponse>(
       environment.worker_url + '/api/orders/create',
-      parameters
+      payload,
     );
   }
 }

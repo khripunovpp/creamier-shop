@@ -8,14 +8,17 @@ import {RouterOutlet} from '@angular/router';
     RouterOutlet
   ],
   template: `
-    <router-outlet></router-outlet>
+    <div class="page-wrapper">
+      <router-outlet></router-outlet>
+    </div>
   `,
   styles: `
     :host {
-      display: flex;
-      height: 100dvh;
+
+    }
+    .page-wrapper {
+      width: 100%;
       padding: 32px;
-      overflow-y: auto;
     }
   `
 })

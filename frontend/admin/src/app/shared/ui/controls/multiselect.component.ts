@@ -195,7 +195,8 @@ export class MultiselectComponent
   }
 
   writeValue(value: unknown): void {
-    this.change(value);
+    // CVA contract: writeValue must NOT fire onChange — only sync internal state.
+    this.value.set(value);
   }
 
   change(value: unknown) {

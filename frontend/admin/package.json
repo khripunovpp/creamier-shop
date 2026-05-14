@@ -3,9 +3,11 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "prestart": "node scripts/build-photos-manifest.js",
     "start": "ng serve --configuration development",
+    "prebuild": "node scripts/build-photos-manifest.js",
     "build": "ng build",
-    "build:prod": "node scripts/generate-env.js && ng build",
+    "build:prod": "node scripts/generate-env.js && node scripts/build-photos-manifest.js && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

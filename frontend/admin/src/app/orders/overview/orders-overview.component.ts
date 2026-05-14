@@ -12,6 +12,7 @@ import {FormsModule} from '@angular/forms';
 import {NotificationsService} from '../../shared/services/notifications.service';
 import {DatePipe} from '@angular/common';
 import {ButtonComponent} from '../../shared/ui/controls/button/button.component';
+import {PullDirective} from '../../shared/directives/pull.directive';
 import {canMarkDelivered, canMarkPaidDelivered, canMarkPaidUndelivered} from '../orders.helpers';
 import {BadgeComponent} from '../../shared/ui/badge.component';
 import {RouterLink} from '@angular/router';
@@ -24,7 +25,7 @@ import {RouterLink} from '@angular/router';
   template: `
     <cm-container>
       <cm-flex-column>
-        <cm-flex-row size="small" [center]="true">
+        <cm-flex-row [center]="true" size="small">
           <cm-home-link></cm-home-link>
 
           <cm-title>Orders Overview</cm-title>
@@ -32,6 +33,8 @@ import {RouterLink} from '@angular/router';
           @if (orders.isLoading()) {
             <cm-inline-circle-loader></cm-inline-circle-loader>
           }
+
+          <cm-button appearance="primary" cmPull link="/orders/create" size="tiny">Create</cm-button>
         </cm-flex-row>
 
         @if (orders.value()?.length) {
@@ -60,16 +63,14 @@ import {RouterLink} from '@angular/router';
                       @if (isNewOrder(item)) {
                         <cm-badge appearance="success">New</cm-badge><br>
                       }
-                      <a class="cm-link"
-                         [routerLink]="['/orders', item.id]">
-                        @if (item.delivery_info) {
-                          {{ item.delivery_info.postalCode }}<br>
-                          {{ item.delivery_info.addressLine1 }}<br>
-                          {{ item.delivery_info.addressLine2 }}
-                        } @else if (item.delivery_type === 'pickup') {
+                      <a [routerLink]="['/orders', item.id]"
+                         class="cm-link">
+                        @if (item.delivery_type === 'pickup') {
                           Pickup
+                        } @else if (item.delivery_info?.['address']) {
+                          {{ item.delivery_info!['address'] }}
                         } @else {
-                          No address
+                          Delivery (no address)
                         }
                       </a>
                     </td>
@@ -91,20 +92,20 @@ import {RouterLink} from '@angular/router';
                       {{ item.status }}
                     </td>
                     <td>
-                      <cm-flex-column size="tiny" position="end">
+                      <cm-flex-column position="end" size="tiny">
                         <cm-flex-row size="tiny">
 
                           @if (canMarkPaid(item)) {
-                            <cm-button appearance="warning"
-                                       (click)="onMarkPaid(item)"
+                            <cm-button (click)="onMarkPaid(item)"
+                                       appearance="warning"
                                        size="tiny">
                               Mark Paid
                             </cm-button>
                           }
 
                           @if (canMarkDelivered(item)) {
-                            <cm-button appearance="success"
-                                       (click)="onMarkDelivered(item)"
+                            <cm-button (click)="onMarkDelivered(item)"
+                                       appearance="success"
                                        size="tiny">
                               Mark Delivered
                             </cm-button>
@@ -134,6 +135,7 @@ import {RouterLink} from '@angular/router';
     FormsModule,
     DatePipe,
     ButtonComponent,
+    PullDirective,
     BadgeComponent,
     RouterLink,
 
